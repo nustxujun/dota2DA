@@ -1,5 +1,23 @@
-extends layout
+//- extends frame
 
-block content
-  h1= title
-  p Welcome to #{title}
+//- block body
+//-   - each hero, index in heroes
+//-     a(href="http://dotamax.com/hero/detail/#{hero.name}/")
+//-       img(src="http://cdn.dota2.com/apps/dota2/images/heroes/#{hero.name}_hphover.png" )
+
+extends frame
+
+block body
+  script(src="libs/jquery-3.1.1.min.js")
+  script(type="text/javascript").
+    
+    $.get('api/GetHeroes', function (data) 
+    {
+      var heroes = data.result.heroes;
+      for (var index in heroes)
+      {
+        var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
+        document.write("<img style='stylesheet' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' />");
+      }
+      
+    })

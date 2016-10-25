@@ -1,8 +1,22 @@
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-color: rgb(33,33,33)
 }
 
 a {
   color: #00B7FF;
 }
+
+img{
+  margin:1px;
+  border: 0px solid black;
+}
+
+
+div#hero_item_chart { 
+  height:500px;
+}
+.left{ float:left; width:100px; }
+.right{ float:right; width:100px;}
+.center{  margin:0 100px; }

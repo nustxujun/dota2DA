@@ -2,7 +2,9 @@ var http = require('http')
 
 var interfacesMap = 
 {
-    GetHeroes: "IEconDOTA2_570"
+    GetHeroes: "IEconDOTA2_570",
+    GetLiveLeagueGames:"IDOTA2Match_570",
+    GetMatchDetails:"IDOTA2Match_570"
 }
 
 function call(method, args, callback)
@@ -15,6 +17,7 @@ function call(method, args, callback)
 
     if (typeof(interfacesMap[method]) == "undefined" )
     {
+        console.log("cannot find interface for " + method);
         return;
     }
 
@@ -45,5 +48,15 @@ exports.call = call;
 
 exports.GetHeroes = function(callback)
 {
-    call(callback, "GetHeroes",{});
+    call("GetHeroes",{}, callback);
+}
+
+exports.GetLiveLeagueGames = function(callback)
+{
+    call("GetLiveLeagueGames", {}, callback)
+}
+
+exports.GetMatchDetails = function(matchid, callback)
+{
+    call( "GetLiveLeagueGames", {match_id:matchid}, callback)
 }

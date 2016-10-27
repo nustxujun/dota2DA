@@ -1,4 +1,5 @@
 var http = require('http')
+var logger = require("./logger")
 
 var interfacesMap = 
 {
@@ -17,7 +18,7 @@ function call(method, args, callback)
 
     if (typeof(interfacesMap[method]) == "undefined" )
     {
-        console.log("cannot find interface for " + method);
+        logger.log("cannot find interface for " + method,"error");
         return;
     }
 
@@ -27,7 +28,7 @@ function call(method, args, callback)
                 "/v001/?key=C482D5B27FD23B5F10F38096D15E8995" + 
                 paras;
     
-    console.log("call " + url);
+    logger.log("call " + url);
     http.get(url, function (response)
     {
         var data = "";
@@ -37,8 +38,6 @@ function call(method, args, callback)
         }).on("end",function()
         {
             var result = JSON.parse(data);
-            console.log("return " + result.result.status);
-            
             callback(result);
         })
     })
@@ -58,5 +57,5 @@ exports.GetLiveLeagueGames = function(callback)
 
 exports.GetMatchDetails = function(matchid, callback)
 {
-    call( "GetLiveLeagueGames", {match_id:matchid}, callback)
+    call( "GetMatchDetails", {match_id:matchid}, callback)
 }

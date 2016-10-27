@@ -3,7 +3,6 @@ var router = express.Router();
 var dota2api = require('../libs/dota2api')
 
 router.get(/.*/, function(req, res, next) {
-    console.log(req.path.substr(1))
     
     dota2api.call(req.path.substr(1), req.query, function (result)
     {

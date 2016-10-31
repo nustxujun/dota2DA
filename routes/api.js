@@ -7,7 +7,6 @@ var items;
 dota2api.GetHeroes(function (data)
 {
     heroes = data.result.heroes;
-
 })
 
 dota2api.GetGameItems(function (data)

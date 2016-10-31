@@ -1,3 +1,23 @@
+//- extends frame
+
+//- block body
+//-   #main
+//-     script(src="libs/jquery-3.1.1.min.js")
+//-     script(type="text/javascript").
+      
+//-       $.get('api/GetHeroes', function (heroes) 
+//-       {
+//-         var content = "";
+//-         for (var index in heroes)
+//-         {
+//-           var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
+//-           content += "<a href='hero/" + name + "'><img src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' /></a>";
+//-         }
+
+//-         document.getElementById("main").innerHTML = content; 
+        
+//-       })
+
 extends frame
 
 block body
@@ -5,14 +25,16 @@ block body
     script(src="libs/jquery-3.1.1.min.js")
     script(type="text/javascript").
       
-      $.get('api/GetHeroes', function (data) 
+      $.get('api/GetItems', function (items) 
       {
         var content = "";
-        var heroes = data.result.heroes;
-        for (var index in heroes)
+        for (var index in items)
         {
-          var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
-          content += "<a href='hero/" + name + "'><img src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' /></a>";
+          if (items[index].cost != 0 && items[index].recipe == 0)
+          {
+            var name = items[index].name.match(/item_(.*)/)[1];
+            content += "<a href='item/" + name + "'><img src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' /></a>";
+          }
         }
 
         document.getElementById("main").innerHTML = content; 

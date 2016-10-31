@@ -2,21 +2,25 @@ var express = require('express');
 var router = express.Router();
 var dota2api = require('../libs/dota2api')
 
-router.get(/.*/, function(req, res, next) {
-    console.log(req.path.substr(1))
-    
-    dota2api.call(req.path.substr(1), req.query, function (result)
-    {
-        var heroes = [];
+var heroes;
+var items;
+dota2api.GetHeroes(function (data)
+{
+    heroes = data.result.heroes;
 
-        for (var index in result.result.heroes) 
-        {
-            var name = result.result.heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
-            heroes.push({name:name})
-        }
+})
 
-        res.send(result);
-    })
+dota2api.GetGameItems(function (data)
+{
+    items = data.result.items;
+})
+
+router.get("/GetHeroes", function(req, res, next) {
+    res.send(heroes);
+});
+
+router.get("/GetItems", function(req, res, next) {
+    res.send(items);
 });
 
 module.exports = router;

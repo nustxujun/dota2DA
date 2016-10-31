@@ -4,7 +4,8 @@ var interfacesMap =
 {
     GetHeroes: "IEconDOTA2_570",
     GetLiveLeagueGames:"IDOTA2Match_570",
-    GetMatchDetails:"IDOTA2Match_570"
+    GetMatchDetails:"IDOTA2Match_570",
+    GetGameItems:"IEconDOTA2_570",
 }
 
 function call(method, args, callback)
@@ -59,4 +60,9 @@ exports.GetLiveLeagueGames = function(callback)
 exports.GetMatchDetails = function(matchid, callback)
 {
     call( "GetLiveLeagueGames", {match_id:matchid}, callback)
+}
+
+exports.GetGameItems = function(callback)
+{
+    call("GetGameItems",{}, callback);
 }

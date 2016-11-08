@@ -12,6 +12,7 @@ var users = require('./routes/users');
 var libs = require('./routes/libs');
 var hero = require('./routes/hero');
 var item = require('./routes/item');
+var debug = require('./routes/debug');
 
 var api = require('./routes/api');
 
@@ -35,7 +36,8 @@ app.use('/', routes);
 app.use('/users', users);
 app.use('/libs',libs);
 app.use('/hero',hero);
-app.use('/item',item)
+app.use('/item',item);
+app.use('/debug',debug);
 app.use('/api',api);
 
 // catch 404 and forward to error handler

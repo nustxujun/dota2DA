@@ -53,31 +53,33 @@ function callImpl(method, args, callback)
         {
             if (response.statusCode != 200)
             {
-                logger.log("failed to call " + url,"error");
                 logger.log("return code: " + response.statusCode,"error");
                 logger.log(data,"error");
 
-                // if (response.statusCode == 429)
-                // {
-                //     call(method, args, callback);
-                // }
-
                 callback(data, response.statusCode);
-                
             }
             else
             {
-                var result = JSON.parse(data);
+                try{
+                    var result = JSON.parse(data);
+                }
+                catch(e)
+                {
+                    logger.log("failed to parse json data, in dota2api", "error");
+                    logger.log(data, "error")
+                }
                 callback(result);
             }
         }).on("error", function (err)
         {
+            logger.log("failed to get response " + url,"error");
             logger.log(err,"error");
         })
     })
 
     req.on("error", function (err)
         {
+            logger.log("failed to call " + url,"error");
             logger.log(err,"error");
         })
     //req.end();

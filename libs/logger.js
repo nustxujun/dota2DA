@@ -25,5 +25,5 @@ exports.log = function(msg, level)
 
 exports.use = function (app)
 {
-    app.use(log4js.connectLogger(log, {level:'fatal', format:':method :url'}))
+    app.use(log4js.connectLogger(log, {level:'info', format:':method :url'}))
 }

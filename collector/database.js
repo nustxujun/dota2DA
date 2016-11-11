@@ -13,9 +13,15 @@ exports.connect = function (url)
     db.on("disconnected",function (){ logger.log(url + " disconnected");}); 
 }
 
-exports.createCollection = function(name, schema)
+exports.createCollection = function(name, schema, indexes)
 {
-    var collection = db.model(name, new Schema(schema));
+    var schemaobj =  new Schema(schema);
+    if (indexes)
+    {
+        schemaobj.index(indexes);
+    }
+    var collection = db.model(name, schemaobj);
+
     collections[name] = collection;
 
     logger.log("create collection " + name);

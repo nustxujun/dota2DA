@@ -2,50 +2,36 @@ extends frame
 
 
 block body
-    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
-    #d(style="height: 10px;")
-    #hero_item_chart
-    script(src="../../libs/echarts.js")
+    //- img(src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
+    //- #d(style="height: 10px;")
+    #chart(style="width: 90%;height:400px;")
+    #items
+
+    script(src="/libs/jquery-3.1.1.min.js")
+    script(src="/libs/echarts.js")
+
+
     script(stype="text/javascript").
+
+        var charts = {};
+        var xAxisData = [];
+        for (var i = 0; i < 2000; i+= 10)
+            xAxisData.push(i.toString());
         // 基于准备好的dom，初始化echarts实例
-        var interval = 10;
-        
         function draw()
         {
-            var myChart = echarts.init(document.getElementById('hero_item_chart'));
-            
-            var result = "#{result}";
-            var items = JSON.parse(result.replace(/&quot;/g,'"')).items;
+            var myChart = echarts.init(document.getElementById('chart'));
+            myChart.showLoading();
             var series = [];
-            for (var index in items)
+            for (var item in charts)
             {
-                var item = items[index];
-                var data = [0];
-                var details = item.details;
-                var len = details.length;
-                var time = 10;
-                var i = 1;
-                while( i < len)
-                {
-                    
-                    if (details[i].timestamp == time)
-                    {
-                        data.push(details[i].win / details[i].used);
-                        i++;
-                    }
-                    else
-                    {
-                        data.push(data[data.length - 1]);
-                    }
-
-                    time += interval;
-                }
-                series.push({name:item.id, type:'line', data:data})
+                if (charts[item].used)
+                    series.push(charts[item]);
             }
-                
+
+            console.log(series)
 
             option = {
-               backgroundColor: '#1b1b1b',//背景色
                 tooltip: {
                     trigger: 'axis'
                 },
@@ -55,29 +41,88 @@ block body
                     bottom: '3%',
                     containLabel: true
                 },
-                toolbox: {
-                    feature: {
-                        saveAsImage: {}
-                    }
-                },
                 xAxis: {
-                    color:'#ffffff',
                     type: 'category',
                     boundaryGap: false,
-                    data: ['周一','周二','周三','周四','周五','周六','周日']
+                    data: xAxisData
                 },
                 yAxis: {
-                    color:'#ffffff',
-                    type: 'value'
+                    type: 'value',
+                    plotLines:[{value:0.5}]
+
                 },
-                series: series,
+                series: series
             };
 
 
+                
             myChart.hideLoading();
-            
             myChart.setOption(option);
+            //document.getElementById("main").innerHTML = content; 
         }
+
+        function getDetails(item)
+        {
+            if (charts[item]) 
+            {
+                charts[item].used = true;
+                draw();
+                return;
+            }
+
+            $.get('/api/GetItemDetails/?hero=#{hero}&item=' + item , function (details) 
+            {
+                var data = [];
+
+                for (var i in details)
+                {
+                    var d = details[i];
+                    if (d.used > 10 )
+                    data.push([d.timestamp, d.win / d.used]);
+                }
+
+                charts[item] = {name: item, type:"line", data: data, smooth:true, used: true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}]}};
+                draw();
+            })
+        }
+
+        $.get('/api/GetItems', function (items) 
+        {
+            var content = "";
+            for (var index in items)
+            {
+                if (items[index].cost != 0 && items[index].recipe == 0)
+                {
+                    var name = items[index].name.match(/item_(.*)/)[1];
+                    content += "<img " + "id='" + name + "'width='16px' height='16px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' />";
+                }
+            }
+
+            document.getElementById("items").innerHTML = content; 
+
+            for (var index in items)
+            {
+                if (items[index].cost != 0 && items[index].recipe == 0)
+                {
+                    
+                    var name = items[index].name.match(/item_(.*)/)[1];
+                    var e = document.getElementById(name)
+                    e.onclick = function(obj)
+                    {
+                        console.log(obj.srcElement.id)
+                        var c = charts[obj.srcElement.id];
+                        if (c && c.used)
+                        {
+                            c.used = false;
+                            draw();
+                        }
+                        else
+                            getDetails(obj.srcElement.id);
+                    }
+                }
+            }
+        })
 
         draw();
         window.onresize =function(){  draw();}  
+  

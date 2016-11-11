@@ -5,8 +5,10 @@ var database = require("../collector/database.js")
 
 var heroes;
 var heroMap = {};
+var heroNameMap = [];
 var items;
 var itemMap = {};
+var itemNameMap = [];
 dota2api.GetHeroes(function (data)
 {
     heroes = data.result.heroes;
@@ -15,6 +17,7 @@ dota2api.GetHeroes(function (data)
         var h = heroes[i];
         var name = h.name.match(/npc_dota_hero_(.*)/)[1];
         heroMap[name] = h.id;
+        heroNameMap.push(name);
     }
 })
 
@@ -26,6 +29,7 @@ dota2api.GetGameItems(function (data)
         var h = items[i];
         var name = h.name.match(/item_(.*)/)[1];
         itemMap[name] = h.id;
+        itemNameMap.push(name);
     }
 })
 
@@ -38,9 +42,9 @@ router.get("/GetItems", function(req, res, next) {
 });
 
 router.get("/GetHeroDetails", function(req, res, next) {
-    var heroes = database.getCollection("heroes");
+    var itemsummaries = database.getCollection("itemsummaries");
 
-    heroes.find({heroid: heroMap[req.query.name]}, null, {sort:{used: -1}},function (err, docs)
+    itemsummaries.find({heroid: heroMap[req.query.name]}, null, {sort:{used: -1}},function (err, docs)
     {
         if (err)
         {
@@ -60,7 +64,7 @@ router.get("/GetHeroDetails", function(req, res, next) {
 });
 
 router.get("/GetItemDetails", function(req, res, next) {
-    var items = database.getCollection("items");
+    var items = database.getCollection("itemdetails");
 
     if (!req.query.item || !req.query.hero )
     {
@@ -70,8 +74,7 @@ router.get("/GetItemDetails", function(req, res, next) {
     var condition = {};
     condition.itemid = itemMap[req.query.item];
     condition.heroid = heroMap[req.query.hero];
-
-    items.find(condition,null, {sort:{used:-1}},function (err, docs)
+    items.find(condition,null, {sort:{timestamp:1}},function (err, docs)
     {
         if (err)
         {
@@ -83,7 +86,7 @@ router.get("/GetItemDetails", function(req, res, next) {
             for (var i in docs)
             {
                 var d = docs[i];
-                ret.push({itemid:d.itemid, heroid: d.heroid, used: d.used, win: d.win, timestamp:d.timestamp})
+                ret.push({item:itemNameMap[d.itemid], hero:heroNameMap[d.heroid], used: d.used, win: d.win, timestamp:d.timestamp})
             }
             res.send(ret);
         }

@@ -5,13 +5,14 @@ block body
     script(src="libs/jquery-3.1.1.min.js")
     script(type="text/javascript").
       
-      $.get('api/GetHeroes', function (heroes) 
+      $.get('/api/GetHeroes', function (heroes) 
       {
+        console.log(heroes)
         var content = "";
         for (var index in heroes)
         {
           var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
-          content += "<a href='hero/" + name + "'><img src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' /></a>";
+          content += "<a href='hero/" + name + "'><img 'width='16px' height='16px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' /></a>";
         }
 
         document.getElementById("main").innerHTML = content; 

@@ -4,7 +4,6 @@ var favicon = require('serve-favicon');
 //var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var collector = require('./collector/collector');
 var logger = require('./libs/logger');
 
 var routes = require('./routes/index');
@@ -12,7 +11,6 @@ var users = require('./routes/users');
 var libs = require('./routes/libs');
 var hero = require('./routes/hero');
 var item = require('./routes/item');
-var debug = require('./routes/debug');
 
 var api = require('./routes/api');
 
@@ -37,7 +35,6 @@ app.use('/users', users);
 app.use('/libs',libs);
 app.use('/hero',hero);
 app.use('/item',item);
-app.use('/debug',debug);
 app.use('/api',api);
 
 // catch 404 and forward to error handler
@@ -71,7 +68,9 @@ app.use(function(err, req, res, next) {
   });
 });
 
-collector.start()
+
+//var collector = require('./collector/collector');
+//collector.start()
 
 
 module.exports = app;

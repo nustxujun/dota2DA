@@ -2,56 +2,139 @@ extends frame
 
 
 block body
-    //- img(src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
-    //- #d(style="height: 10px;")
-    #chart(style="width: 90%;height:400px;")
-    #items
+    #hero(align="middle")
+        img( src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
+    #chart(style="width: 100%;height: 400px;")
+    #table
+        table(style="background:#111;width:80%;max-width:500px;min-width:300px;margin-left:auto;margin-right:auto;color:#888" id="items")
+            tbody
+                tr
+                    td(style="width:20px;")
+                        div(style="background:#a00;width:20px;height:40px")
+                    td(style="width:80px")
+                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
+                    td
+                        div(style="background:green;width:30%;margin-left:0px;color:white;")
+                            p(style="margin-left:10px") 30%
+
+    
+               
 
     script(src="/libs/jquery-3.1.1.min.js")
     script(src="/libs/echarts.js")
 
 
     script(stype="text/javascript").
+        function formatTime(time)
+        {
+            var min = Math.floor(time / 60);
+            var sec = time % 60;
+            if (min == 0)
+                return sec + '"';
+            else if (sec == 0)
+                return min + " '00" + '"';
+            else                
+                return min + "' " + sec + '"';
+        }
 
         var charts = {};
         var xAxisData = [];
-        for (var i = 0; i < 2000; i+= 10)
-            xAxisData.push(i.toString());
+        for (var i = 0; i < 10800; i+= 10)
+        {
+             xAxisData.push( formatTime(i));
+        }
         // 基于准备好的dom，初始化echarts实例
         function draw()
         {
-            var myChart = echarts.init(document.getElementById('chart'));
+            
+            var div = document.getElementById('chart');
+            var height = div.clientWidth /2.5;
+            if (height < 250) height = 250;
+            div.style.height = height;
+            
+            var myChart = echarts.init(div);
             myChart.showLoading();
-            var series = [];
+            var series = [
+                            {name:'1',type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}],symbol:'none', silent: true, animation: false},
+                             data:[0.1,0.2,0.23,0.405,0.3,0.234,0.23,0.678,0.768,0.678,0.678,0.42,0.34,0.2,0.342,0.34,0.2,0.432,0.23,0.42,0.35,0.456,0.546,0.7,0.67,0.8]},
+                            {name:'2',type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}],symbol:'none', silent: true, animation: false},
+                             data:[0.2,0.134,0.13,0.1,0.5,0.13,0.1,0.242,0.64,0.2,0.668,0.305,0.578,0.32,0.24,0.35,0.456,0.37,0.2,0.278,0.178,0.132,0.246,0.5,0.23,0.42]}
+                        ];
+            var legendData = [];
             for (var item in charts)
             {
-                if (charts[item].used)
-                    series.push(charts[item]);
+                if (!charts[item].used)
+                    continue;
+                series.push(charts[item]);
+                var name = charts[item].name;
+                legendData.push({name:name, icon:'pin'})
             }
-
-            console.log(series)
+            
+            
 
             option = {
-                tooltip: {
-                    trigger: 'axis'
+                animation:false,
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}
+                    }
                 },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer:{
+                    },
+                    formatter: '{b}',
+                },
+
                 grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '3%',
+                    left: '0',
+                    right: '30',
+                    bottom: '20',
                     containLabel: true
                 },
+
                 xAxis: {
+                    name:'T',
                     type: 'category',
-                    boundaryGap: false,
-                    data: xAxisData
+                    boundaryGap : false,
+                    data: xAxisData,
+                    axisLine:{
+                        lineStyle:{
+                            color: '#aaa'
+                        }
+                    },
                 },
                 yAxis: {
+                    name:'rate',
                     type: 'value',
-                    plotLines:[{value:0.5}]
-
+                    min:0,
+                    max:1,
+                    splitNumber:2,
+                    minInterval: 0.5,
+                    splitLine: {
+                        show: true,
+                        lineStyle:{
+                            color:'#444'
+                        }                        
+                    },
+                    axisLine:{
+                        lineStyle:{
+                            color: '#aaa'
+                        }
+                    },
+                    splitArea:{
+                        show:true,
+                        areaStyle:{
+                            color:['rgba(255,0,0,0.02)','rgba(0,255,0,0.02)']
+                        }
+                    }
                 },
-                series: series
+
+                legend: {
+                    formatter:' ',
+                    data:legendData,
+                },
+                series:series,
             };
 
 
@@ -81,20 +164,19 @@ block body
                     data.push([d.timestamp, d.win / d.used]);
                 }
 
-                charts[item] = {name: item, type:"line", data: data, smooth:true, used: true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}]}};
+                charts[item] = {used:true,name:item, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},
+                                data:data};
                 draw();
             })
         }
 
-        $.get('/api/GetItems', function (items) 
+        $.get('/api/GetHeroDetails', function (items) 
         {
             var content = "";
             for (var index in items)
             {
-                if (items[index].cost != 0 && items[index].recipe == 0)
                 {
-                    var name = items[index].name.match(/item_(.*)/)[1];
-                    content += "<img " + "id='" + name + "'width='16px' height='16px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' />";
+                    content += "<img " + "id='" + item + "'width='16px' height='16px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' />";
                 }
             }
 
@@ -102,23 +184,19 @@ block body
 
             for (var index in items)
             {
-                if (items[index].cost != 0 && items[index].recipe == 0)
+                var i = items[index];
+                var e = document.getElementById(i.item)
+                e.onclick = function(obj)
                 {
-                    
-                    var name = items[index].name.match(/item_(.*)/)[1];
-                    var e = document.getElementById(name)
-                    e.onclick = function(obj)
+                    console.log(obj.srcElement.id)
+                    var c = charts[obj.srcElement.id];
+                    if (c && c.used)
                     {
-                        console.log(obj.srcElement.id)
-                        var c = charts[obj.srcElement.id];
-                        if (c && c.used)
-                        {
-                            c.used = false;
-                            draw();
-                        }
-                        else
-                            getDetails(obj.srcElement.id);
+                        c.used = false;
+                        draw();
                     }
+                    else
+                        getDetails(obj.srcElement.id);
                 }
             }
         })

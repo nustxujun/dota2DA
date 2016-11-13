@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var dota2api = require('../libs/dota2api')
-var database = require("../collector/database.js")
+var datamgr = require("../collector/datamgr.js")
+var logger = require("../libs/logger")
 
 var heroes;
 var heroMap = {};
@@ -19,6 +20,8 @@ dota2api.GetHeroes(function (data)
         heroMap[name] = h.id;
         heroNameMap.push(name);
     }
+
+    logger.log("load hero list completed.")
 })
 
 dota2api.GetGameItems(function (data)
@@ -31,6 +34,8 @@ dota2api.GetGameItems(function (data)
         itemMap[name] = h.id;
         itemNameMap.push(name);
     }
+
+    logger.log("load item list completed.")
 })
 
 router.get("/GetHeroes", function(req, res, next) {
@@ -42,7 +47,7 @@ router.get("/GetItems", function(req, res, next) {
 });
 
 router.get("/GetHeroDetails", function(req, res, next) {
-    var itemsummaries = database.getCollection("itemsummaries");
+    var itemsummaries = datamgr.getItemSummaries();
 
     itemsummaries.find({heroid: heroMap[req.query.name]}, null, {sort:{used: -1}},function (err, docs)
     {
@@ -64,22 +69,21 @@ router.get("/GetHeroDetails", function(req, res, next) {
 });
 
 router.get("/GetItemDetails", function(req, res, next) {
-    var items = database.getCollection("itemdetails");
 
     if (!req.query.item || !req.query.hero )
     {
-        res.send("need args")
+        res.send("args err");
         return;
     }
+
+    var itemdetails = datamgr.getItemDetails();
     var condition = {};
     condition.itemid = itemMap[req.query.item];
     condition.heroid = heroMap[req.query.hero];
-    items.find(condition,null, {sort:{timestamp:1}},function (err, docs)
+    itemdetails.find(condition,null, {sort:{timestamp:1}},function (err, docs)
     {
         if (err)
-        {
             logger.log(err, "error")
-        }
         else
         {
             var ret = [];

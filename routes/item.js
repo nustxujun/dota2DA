@@ -6,7 +6,7 @@ router.get(/.*/, function(req, res, next) {
     var args = req.qurey;
 
 
-    res.render('item', {item:itemname});
+    res.render('item', {item:itemname,temp:'item'});
 });
 
 module.exports = router;

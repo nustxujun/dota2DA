@@ -1,14 +1,13 @@
 extends frame
 
 block body
-  #main
+  #main(style="padding-left:10px")
     script(src="libs/jquery-3.1.1.min.js")
     script(type="text/javascript").
 
       function draw()
       {
         var div = document.getElementById('main');
-        console.log(div.clientWidth)
         var width = div.clientWidth * 0.125;
         width = width > 127? 127: width
         var height = width * 71 / 127;
@@ -28,25 +27,3 @@ block body
       }
       draw();
       window.onresize =function(){  draw();}  
-
-//- extends frame
-
-//- block body
-//-   #main
-//-     script(src="libs/jquery-3.1.1.min.js")
-//-     script(type="text/javascript").
-      
-//-       $.get('/api/GetItems', function (items) 
-//-       {
-//-         var content = "";
-//-         for (var index in items)
-//-         {
-//-           if (items[index].cost != 0 && items[index].recipe == 0)
-//-           {
-//-             var name = items[index].name.match(/item_(.*)/)[1];
-//-             content += "<a href='item/" + name + "'><img src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' /></a>";
-//-           }
-//-         }
-
-//-         document.getElementById("main").innerHTML = content; 
-//-       })

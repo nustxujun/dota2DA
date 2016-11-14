@@ -3,12 +3,13 @@ extends frame
 
 block body
     #hero(align="middle")
-        img( src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
-    #chart(style="width: 100%;height: 400px;")
+        //- img( src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
+    #chart(style="width: 100%;")
     #table
-        table(style="background:#111;width:80%;max-width:500px;min-width:300px;margin-left:auto;margin-right:auto;color:#888" id="items")
-            tbody
-                tr
+        table(style="background:#111;width:80%;max-width:500px;min-width:300px;margin-left:auto;margin-right:auto;color:#888")
+            tbody(id="items")
+            
+                tr 
                     td(style="width:20px;")
                         div(style="background:#a00;width:20px;height:40px")
                     td(style="width:80px")
@@ -54,12 +55,7 @@ block body
             
             var myChart = echarts.init(div);
             myChart.showLoading();
-            var series = [
-                            {name:'1',type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}],symbol:'none', silent: true, animation: false},
-                             data:[0.1,0.2,0.23,0.405,0.3,0.234,0.23,0.678,0.768,0.678,0.678,0.42,0.34,0.2,0.342,0.34,0.2,0.432,0.23,0.42,0.35,0.456,0.546,0.7,0.67,0.8]},
-                            {name:'2',type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}],symbol:'none', silent: true, animation: false},
-                             data:[0.2,0.134,0.13,0.1,0.5,0.13,0.1,0.242,0.64,0.2,0.668,0.305,0.578,0.32,0.24,0.35,0.456,0.37,0.2,0.278,0.178,0.132,0.246,0.5,0.23,0.42]}
-                        ];
+            var series = [];
             var legendData = [];
             for (var item in charts)
             {
@@ -81,8 +77,6 @@ block body
                 },
                 tooltip: {
                     trigger: 'axis',
-                    axisPointer:{
-                    },
                     formatter: '{b}',
                 },
 
@@ -144,6 +138,11 @@ block body
             //document.getElementById("main").innerHTML = content; 
         }
 
+        function usedlimit(num)
+        {
+            return num > 10;
+        }
+
         function getDetails(item)
         {
             if (charts[item]) 
@@ -160,8 +159,8 @@ block body
                 for (var i in details)
                 {
                     var d = details[i];
-                    if (d.used > 10 )
-                    data.push([d.timestamp, d.win / d.used]);
+                    if (usedlimit(d.used) )
+                        data.push([formatTime(d.timestamp), d.win / d.used]);
                 }
 
                 charts[item] = {used:true,name:item, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},
@@ -169,37 +168,47 @@ block body
                 draw();
             })
         }
+        
+        function selectItem(item)
+        {
+            if (charts[item] && charts[item].used)
+            {
+                document.getElementById(item).style.background = "#111"; 
+                charts[item].used = false;
+                draw();
+            }
+            else
+            {
+                document.getElementById(item).style.background = "green"; 
+                getDetails(item)
+            }
+            
+        }
 
-        $.get('/api/GetHeroDetails', function (items) 
+        $.get('/api/GetItemSummaries/?name=#{hero}', function (items) 
         {
             var content = "";
             for (var index in items)
             {
-                {
-                    content += "<img " + "id='" + item + "'width='16px' height='16px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' />";
-                }
+                var item = items[index];
+                var selected = "<td style='width:20px'><div style='width:20px;height:40px' id ='" + item.item + "' /></td>";
+                var image = "<td style='width:80px'><img style='height:40px;vertical-align:middle;' src='http://cdn.dota2.com/apps/dota2/images/items/" + item.item + "_lg.png' /></td>";
+                var rate = "<td onclick='selectItem(\""+item.item+"\")'><div onclick='selectItem(\""+item.item+"\")' style='background:green;margin-left:0px;color:white;width:" + Math.floor(item.win * 100 /item.used ) + "%'><p onclick='selectItem(\""+item.item+"\")' style='margin-left:10px'>" + Math.floor(item.win * 100 /item.used)+"%</p></div></td>";
+                var tr = "<tr >" + selected + image + rate + "</tr>"
+                content += tr;
             }
 
             document.getElementById("items").innerHTML = content; 
-
-            for (var index in items)
-            {
-                var i = items[index];
-                var e = document.getElementById(i.item)
-                e.onclick = function(obj)
-                {
-                    console.log(obj.srcElement.id)
-                    var c = charts[obj.srcElement.id];
-                    if (c && c.used)
-                    {
-                        c.used = false;
-                        draw();
-                    }
-                    else
-                        getDetails(obj.srcElement.id);
-                }
-            }
         })
+
+        $.get('/api/GetHeroSummaries/?name=#{hero}', function (ret) 
+        {
+            var rate = ret.win / ret.play;
+            console.log(rate)
+            
+            charts['#{hero}'] = {used:true,name:'total rate', type:'line', smooth:true,  symbol:'none', data:[rate],markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false}}
+            draw();
+        })        
 
         draw();
         window.onresize =function(){  draw();}  

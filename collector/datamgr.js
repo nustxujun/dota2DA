@@ -33,7 +33,7 @@ function onEvent(event, err)
 exports.init = function()
 {
     var database = require("../libs/database")
-    databse.connect("mongodb://localhost/test",onEvent);
+    database.connect("mongodb://localhost/test",onEvent);
 }
 
 var collections = {};

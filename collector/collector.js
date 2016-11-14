@@ -1,6 +1,6 @@
 var schedule = require('node-schedule');
 var http = require('http')
-var datamgr = require("./database.js")
+var datamgr = require("./datamgr.js")
 var dota2api = require("../libs/dota2api")
 var logger = require("../libs/logger")
 
@@ -31,41 +31,14 @@ function errorlog(err)
         return true; 
 };
 
-cache.add = function (id)
-{
-    cache.update({matchid:doc.matchid}, {$set:{timestamp:getTime()}},{upsert:true},function (err, doc)
-    {
-        errorlog(err);
-        if (doc)
-            logger.log("add match " + doc.matchid + " to caches");
-    })
-}
 
-cache.delete = function (id)
-{
-    cache.remove({matchid:id}, function (err)
-    {
-        if (errorlog(err))
-            logger.log("remove match " + id + " from cache")
-    });   
-}
-
-cache.forEach = function (callback)
-{
-    cache.find({}, function (err, docs)
-    {
-        for (var i in docs)
-        {
-            if(callback(docs[i].matchid, docs[i].timestamp))
-                return ;
-        }
-    })
-}
 
 
 function push(data)
 {
     var games = data.result.games;
+    if (!games)
+        return;
     for (var index in games)
     {
         var match = games[index];
@@ -89,7 +62,7 @@ function collect()
 {
     dota2api.GetLiveLeagueGames(function (data, err)
     {
-        if (errorlog(err))
+        if (errorlog(err) && data.result)
             push(data);            
     })
 }
@@ -139,6 +112,7 @@ function process(matchid, timestamp)
 {
     if (getTime() - timestamp < 600000) //process after end of matches in ten min
         return;
+        console.log("process")
     dota2api.GetMatchDetails(matchid, function(data,err)
     {
         if (err || data.result.error == "Match ID not found") 
@@ -216,8 +190,41 @@ exports.start = function ()
     itemsummaries = datamgr.getItemSummaries();
     itemdetails = datamgr.getItemDetails()
     matchdetails = datamgr.getMatchDetails()
+    herosummaries = datamgr.getHeroSummaries();
+
     cache = datamgr.getCaches();
-    herosummaries = datamgr.getheroSummaries();
+    cache.add = function (id)
+    {
+        cache.update({matchid:id}, {$set:{timestamp:getTime()}},{upsert:true},function (err, doc)
+        {
+            errorlog(err)
+            //if (errorlog(err) && doc)
+            //    logger.log("add match " + id + " to caches");
+        })
+    }
+
+    cache.delete = function (id)
+    {
+        cache.remove({matchid:id}, function (err)
+        {
+            if (errorlog(err))
+                logger.log("remove match " + id + " from cache")
+        });   
+    }
+
+    cache.forEach = function (callback)
+    {
+        cache.find({}, function (err, docs)
+        {
+            for (var i in docs)
+            {
+                if(callback(docs[i].matchid, docs[i].timestamp))
+                    return ;
+            }
+        })
+    }
+
+
 
     var seconds = [];
     for (var i = 0; i < 60 ; i += interval)

@@ -6,10 +6,10 @@ var logger = require("../libs/logger")
 
 var heroes;
 var heroMap = {};
-var heroNameMap = [];
+var heroNameMap = {};
 var items;
 var itemMap = {};
-var itemNameMap = [];
+var itemNameMap = {};
 dota2api.GetHeroes(function (data)
 {
     heroes = data.result.heroes;
@@ -18,7 +18,7 @@ dota2api.GetHeroes(function (data)
         var h = heroes[i];
         var name = h.name.match(/npc_dota_hero_(.*)/)[1];
         heroMap[name] = h.id;
-        heroNameMap.push(name);
+        heroNameMap[h.id]= name;
     }
 
     logger.log("load hero list completed.")
@@ -32,7 +32,8 @@ dota2api.GetGameItems(function (data)
         var h = items[i];
         var name = h.name.match(/item_(.*)/)[1];
         itemMap[name] = h.id;
-        itemNameMap.push(name);
+        itemNameMap[h.id] = (name);
+
     }
 
     logger.log("load item list completed.")
@@ -46,9 +47,9 @@ router.get("/GetItems", function(req, res, next) {
     res.send(items);
 });
 
-router.get("/GetHeroDetails", function(req, res, next) {
+router.get("/GetItemSummaries", function(req, res, next) {
     var itemsummaries = datamgr.getItemSummaries();
-
+    
     itemsummaries.find({heroid: heroMap[req.query.name]}, null, {sort:{used: -1}},function (err, docs)
     {
         if (err)
@@ -61,9 +62,25 @@ router.get("/GetHeroDetails", function(req, res, next) {
             for (var i in docs)
             {
                 var d = docs[i];
-                ret.push({itemid:d.itemid, heroid: d.heroid, used: d.used, win: d.win})
+                ret.push({item:itemNameMap[d.itemid], hero: heroNameMap[d.heroid], used: d.used, win: d.win})
             }
             res.send(ret);
+        }
+    })
+});
+
+router.get("/GetHeroSummaries", function(req, res, next) {
+    var herosummaries = datamgr.getHeroSummaries();
+    
+    herosummaries.findOne({heroid: heroMap[req.query.name]},function (err, doc)
+    {
+        if (err)
+        {
+            logger.log(err, "error")
+        }
+        else
+        {
+            res.send(doc);
         }
     })
 });
@@ -90,6 +107,7 @@ router.get("/GetItemDetails", function(req, res, next) {
             for (var i in docs)
             {
                 var d = docs[i];
+
                 ret.push({item:itemNameMap[d.itemid], hero:heroNameMap[d.heroid], used: d.used, win: d.win, timestamp:d.timestamp})
             }
             res.send(ret);

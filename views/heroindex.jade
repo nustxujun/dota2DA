@@ -4,26 +4,29 @@ block body
   #main(style="padding-left:10px")
     script(src="libs/jquery-3.1.1.min.js")
     script(type="text/javascript").
-
-      function draw()
-      {
-        var div = document.getElementById('main');
-        var width = div.clientWidth * 0.125;
-        width = width > 127? 127: width
-        var height = width * 71 / 127;
-        $.get('/api/GetHeroes', function (heroes) 
+        var heroes ;
+        $.get('/api/GetHeroes', function (ret) 
         {
-          var content = "";
-          for (var index in heroes)
-          {
-            var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
-            content += "<a href='hero/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' /></a>";
-            
-          }
-
-          div.innerHTML = content; 
-          
+            heroes = ret;
+            draw();
         })
-      }
-      draw();
-      window.onresize =function(){  draw();}  
+
+
+        function draw()
+        {
+            var div = document.getElementById('main');
+            var width = div.clientWidth * 0.125;
+            width = width > 127? 127: width
+            var height = width * 71 / 127;
+
+            var content = "";
+            for (var index in heroes)
+            {
+              var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
+              content += "<a href='hero/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' /></a>";
+              
+            }
+            div.innerHTML = content; 
+        }
+        
+        window.onresize =function(){ draw();}  

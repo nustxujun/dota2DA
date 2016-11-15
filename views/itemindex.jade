@@ -4,27 +4,31 @@ block body
   #main(style="padding-left:10px")
     script(src="libs/jquery-3.1.1.min.js")
     script(type="text/javascript").
+        var items;
+        $.get('/api/GetItems', function (ret) 
+        {
+            items = ret;
+            draw();
+        })
+
         function draw()
         {
-            $.get('/api/GetItems', function (items) 
+            var div = document.getElementById('main');
+            var width = div.clientWidth * 0.09;
+            width = width > 85? 85: width
+            var height = width * 64 / 85;
+
+            var content = "";
+            for (var index in items)
             {
-                var div = document.getElementById('main');
-                var width = div.clientWidth * 0.09;
-                width = width > 85? 85: width
-                var height = width * 64 / 85;
-
-                var content = "";
-                for (var index in items)
+                if (items[index].cost != 0 && items[index].recipe == 0)
                 {
-                    if (items[index].cost != 0 && items[index].recipe == 0)
-                    {
-                        var name = items[index].name.match(/item_(.*)/)[1];
-                        content += "<a href='item/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' /></a>";
-                    }
+                    var name = items[index].name.match(/item_(.*)/)[1];
+                    content += "<a href='item/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' /></a>";
                 }
+            }
 
-                document.getElementById("main").innerHTML = content; 
-            })
+            document.getElementById("main").innerHTML = content; 
         }
         draw();
         window.onresize =function(){  draw();}  

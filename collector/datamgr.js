@@ -23,8 +23,27 @@ var herosummariesSchema =
     goldSpent:Number,
 }
 var herosummariesIndex = {heroid:1};
+var herodetailsSchema = 
+{
+    heroid:Number,
+    timestamp:Number,
+    play:Number,
+    gpm:Number, 
+    xpm:Number, 
+    kills:Number, 
+    deaths:Number, 
+    assists:Number, 
+    lastHits:Number,
+    denies:Number,
+    gold:Number,
+    netWorth:Number,
+    level: Number,
+}
+var herodetailsIndex = {heroid:1, timestamp:1}
 var cachesSchema = {matchid: Number, timestamp:Number};
 var cachesIndex = {matchid:1};
+var itemversusesSchema = {itemid:Number, heroid:Number, used:Number, win:Number};
+var itemversusesIndex = {itemid:1, heroid:1};
 
 
 function onEvent(event, err)
@@ -68,9 +87,17 @@ exports.getHeroSummaries = function ()
     return getCollection("herosummaries", herosummariesSchema, herosummariesIndex);
 }
 
+exports.getHeroDetails = function ()
+{
+    return getCollection("herodetails", herodetailsSchema, herodetailsIndex);
+}
+
 exports.getMatchDetails = function ()
 {
     return getCollection("matchdetails", matchdetailsSchema, matchdetailsIndex);
 }
 
-
+exports.getItemVersuses = function()
+{
+    return getCollection("itemversuses", itemversusesSchema, itemversusesIndex);
+}

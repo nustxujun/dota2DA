@@ -4,6 +4,16 @@ extends frame
 block body
     #hero(align="middle")
         //- img( src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
+    #baselines(style="word-wrap:break-word; line-height:40px")
+        text(onclick="onChecked('gpm')" id="gpm").checkbox gpm 
+        b(onclick="onChecked('xpm')" id="xpm").checkbox xpm 
+        b(onclick="onChecked('kills')" id="kills").checkbox kills 
+        b(onclick="onChecked('deaths')" id="deaths").checkbox deaths 
+        b(onclick="onChecked('assists')" id="assists").checkbox assists 
+        b(onclick="onChecked('denies')" id="denies").checkbox denies 
+        b(onclick="onChecked('level')" id="level").checkbox level 
+        b(onclick="onChecked('netWorth')" id="netWorth").checkbox net worth 
+        b(onclick="onChecked('gold')" id="gold").checkbox gold 
     #chart(style="width: 100%;height:400px")
     #table
         table(style="background:#111;width:80%;max-width:500px;min-width:300px;margin-left:auto;margin-right:auto;color:#888")
@@ -16,6 +26,67 @@ block body
 
 
     script(stype="text/javascript").
+        var xAxisData = [];
+        for (var i = 0; i < 10800; i+= 10)
+        {
+             xAxisData.push( formatTime(i));
+        }
+
+        var charts = {};
+        var div = document.getElementById('chart');
+        var myChart = echarts.init(div);
+        var helper = echartshelper(myChart);
+        var options = helper.getOptions();
+        options.xAxis.data = xAxisData;
+        var lastDiv;
+        var herodetails;
+        function onChecked(id)
+        {
+            if (lastDiv)
+            {
+                document.getElementById(lastDiv).setAttribute("class", "checkbox")
+                helper.remove(lastDiv)
+            }
+            var e = document.getElementById(id);
+            if (e.getAttribute("class") == "checkbox" )
+            {
+                e.setAttribute("class", "checkboxChecked");
+                options.yAxis[1].name = id;
+                lastDiv = id;
+                showdetails(id)
+            }
+            else
+            {
+                e.setAttribute("class", "checkbox");
+                options.yAxis[1].name = "";
+                helper.remove(id)
+                draw();
+            }
+            
+        }
+
+        function showdetails(item)
+        {
+            if (herodetails)
+            {   
+                var data = [];
+                for (var i in herodetails)
+                {
+                    var d = herodetails[i];
+                    data.push([formatTime(herodetails[i].timestamp),d[item] / d.play]);
+                }
+                helper.update({name:item,yAxisIndex:1,type:'line', smooth:true,  symbol:'none', data:data,symbol:'none', silent: true, animation: false})
+                draw();
+            }
+            else
+            {
+                $.get('/api/GetHeroDetails/?name=#{hero}', function (ret) 
+                {
+                    herodetails = ret;
+                    showdetails(item);
+                })       
+            }
+        }
 
         function formatTime(time)
         {
@@ -29,19 +100,6 @@ block body
                 return min + "' " + sec + '"';
         }
 
-        var xAxisData = [];
-        for (var i = 0; i < 10800; i+= 10)
-        {
-             xAxisData.push( formatTime(i));
-        }
-
-        var charts = {};
-        var div = document.getElementById('chart');
-        var myChart = echarts.init(div);
-        var helper = echartshelper(myChart);
-        var options = helper.getOptions();
-        options.xAxis.data = xAxisData;
-
 
         function draw()
         {
@@ -50,21 +108,21 @@ block body
             div.style.height = height;
 
             helper.refresh()
-            //document.getElementById("main").innerHTML = content; 
         }
 
         window.onresize =function(){ draw();}  
 
         function usedlimit(num)
         {
-            return num > 10;
+            return num > 100;
         }
 
         function getDetails(item)
         {
             if (charts[item]) 
             {
-                helper.update(item, charts[item]);
+                helper.update( charts[item]);
+                draw();
                 return;
             }
 
@@ -72,16 +130,38 @@ block body
             {
                 var data = [];
 
-                for (var i in details)
+                //- for (var i in details)
+                //- {
+                //-     var d = details[i];
+                //-     if (!usedlimit(d.used) )
+                //-         continue;
+                    
+                //-     data.push([formatTime(d.timestamp), d.win / d.used]);
+                //- }
+
+                var size = details.length;
+                var range = 3;
+                for (var i = range; i < size - range; ++i)
                 {
-                    var d = details[i];
-                    if (usedlimit(d.used) )
-                        data.push([formatTime(d.timestamp), d.win / d.used]);
+                    if (details[i].used < 10)
+                        continue;
+                    var win = 0;
+                    var used = 0;
+                    for (var j = -range; j <= range; ++j)
+                    {
+                        var d = details[i + j];
+                        win += d.win;
+                        used += d.used;
+                    }
+
+                    win = win / (range*2 + 1);
+                    used = used / (range*2 + 1);
+                    data.push([formatTime(details[i].timestamp),win / used])
                 }
 
                 charts[item] = {name:item, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},
                                 data:data};
-                helper.update(item,charts[item]);
+                helper.update(charts[item]);
                 draw();
             })
         }
@@ -89,7 +169,7 @@ block body
         function selectItem(item)
         {
             var sel = document.getElementById(item);
-            if (charts[item] && sel.style.background == "green")
+            if ( sel.style.background == "green")
             {
                 sel.style.background = "#111";
                 helper.remove(item) 
@@ -108,11 +188,14 @@ block body
             var content = "";
             for (var index in items)
             {
+
                 var item = items[index];
+                if (item.used < 10)
+                    continue
                 var selected = "<td style='width:20px'><div style='width:20px;height:40px' id ='" + item.item + "' /></td>";
                 var image = "<td style='width:80px'><img style='height:40px;vertical-align:middle;' src='http://cdn.dota2.com/apps/dota2/images/items/" + item.item + "_lg.png' /></td>";
                 var rate = "<td onclick='selectItem(\""+item.item+"\")'><div onclick='selectItem(\""+item.item+"\")' style='background:green;margin-left:0px;color:white;width:" + Math.floor(item.win * 100 /item.used ) + "%'><p onclick='selectItem(\""+item.item+"\")' style='margin-left:10px'>" + Math.floor(item.win * 100 /item.used)+"%</p></div></td>";
-                var tr = "<tr >" + selected + image + rate + "</tr>"
+                var tr = "<tr >" + selected + image+ rate + "</tr>"
                 content += tr;
             }
 
@@ -123,7 +206,7 @@ block body
         {
             var rate = ret.win / ret.play;
             
-            charts['#{hero}'] = {name:'total rate', type:'line', smooth:true,  symbol:'none', data:[rate],markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false}}
+            helper.update({name:"#{hero}", type:'line', smooth:true,  symbol:'none', data:[rate],markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false}})
             draw();
         })        
 

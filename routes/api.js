@@ -85,6 +85,20 @@ router.get("/GetHeroSummaries", function(req, res, next) {
     })
 });
 
+router.get("/GetHeroDetails", function(req, res, next) {
+    var herodetails = datamgr.getHeroDetails();
+    
+    herodetails.find({heroid: heroMap[req.query.name]},function (err, docs)
+    {
+        if (err)
+            logger.log(err, "error")
+        else
+        {
+            res.send(docs)
+        }
+    })
+});
+
 router.get("/GetItemDetails", function(req, res, next) {
 
     if (!req.query.item || !req.query.hero )
@@ -114,6 +128,9 @@ router.get("/GetItemDetails", function(req, res, next) {
         }
     })
 });
+
+
+
 
 
 module.exports = router;

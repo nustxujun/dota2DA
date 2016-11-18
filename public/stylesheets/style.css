@@ -34,3 +34,20 @@ img{
 .lableLink{
     color:#888;
 }
+.checkbox{
+  color:#888;
+  border:1px solid #888;
+  border-radius:10px;
+  margin:10px;
+  padding:2px;
+  cursor:pointer;
+}
+.checkboxChecked{
+  color:#222;
+  background: #888;
+  border:1px solid #888;
+  border-radius:10px;
+  margin:10px;
+  padding:2px;
+  cursor:pointer;
+}

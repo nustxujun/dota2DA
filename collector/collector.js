@@ -11,7 +11,8 @@ var itemdetails
 var matchdetails
 var cache
 var herosummaries
-
+var herodetails;
+var itemversuses;
 
 function getTime()
 {
@@ -30,9 +31,6 @@ function errorlog(err)
     else 
         return true; 
 };
-
-
-
 
 function push(data)
 {
@@ -55,6 +53,7 @@ function push(data)
                 else
                     cache.add(doc.matchid)
             })
+
     }
 }
 
@@ -63,7 +62,12 @@ function collect()
     dota2api.GetLiveLeagueGames(function (data, err)
     {
         if (errorlog(err) && data.result)
-            push(data);            
+            push(data);       
+        else// retry again
+            dota2api.GetLiveLeagueGames(function(data,err){
+                if (errorlog(err) && data.result)
+                    push(data); 
+            })
     })
 }
 
@@ -81,9 +85,10 @@ function checkPlayer(players)
     return true;
 }
 
-function recordItems(players, timestamp, winner, matchid)
+
+
+function record(players, timestamp, winner, matchid, summaries, versuses)
 {
-    var summaries = new Map()
     for (var i = 0; i < 5; ++i)
     {
         var p = players[i];
@@ -94,25 +99,50 @@ function recordItems(players, timestamp, winner, matchid)
             if (item == 0)
                 continue;
 
+            versuses[item] = true;
+
             var inc = {used:1, win:0};
             inc.win = winner;
 
             summaries.set(item.toString() + p.hero_id.toString(), {item:item, hero: p.hero_id, win: winner})
             itemdetails.update({itemid:item, heroid:p.hero_id, timestamp : timestamp }, {$inc:inc},{upsert: true},errorlog);
         }
-    }
 
-    summaries.forEach(function (item, key)
+        var inc = 
+        {
+            play:1,
+            gpm:p.gold_per_min, 
+            xpm:p.xp_per_min, 
+            kills:p.kills, 
+            deaths:p.death, 
+            assists:p.assists, 
+            lastHits:p.last_hits,
+            denies:p.denies,
+            gold:p.gold,
+            netWorth:p.net_worth,
+            level: p.level,
+        }
+        herodetails.update({heroid:p.hero_id, timestamp:timestamp}, {$inc:inc},{upsert:true}, errorlog );
+    }
+}
+
+function recordVersus(players, win, versuses)
+{
+    for (var index in versuses)
     {
-        itemsummaries.update({itemid:item.item, heroid:item.hero},{$inc:{used:1, win: item.win}}, {upsert:true},errorlog)
-    })
+        var item = index;
+        for (var i = 0; i < 5; ++i)
+        {
+            var p = players[i];
+            itemversuses.update({heroid:p.hero_id, itemid: item}, {$inc:{win:win, used:1}},{upsert: true},errorlog)
+        }
+    }
 }
 
 function process(matchid, timestamp)
 {
     if (getTime() - timestamp < 600000) //process after end of matches in ten min
         return;
-        console.log("process")
     dota2api.GetMatchDetails(matchid, function(data,err)
     {
         if (err || data.result.error == "Match ID not found") 
@@ -158,7 +188,7 @@ function process(matchid, timestamp)
                 towerDamage: p.tower_damage,
                 goldSpent:p.gold_spent,
                 play:1,
-                win: ((i < 5) && radiantWin)
+                win: ((i < 5) == radiantWin)
             }
             herosummaries.update({heroid: p.hero_id}, {$inc:inc}, {upsert:true}, errorlog)
         }
@@ -168,16 +198,26 @@ function process(matchid, timestamp)
             if (!errorlog(err))
                 return;
 
+            var summaries = new Map()
+            var versuses = {radiant:{}, dire:{}};
             for (var d in docs)
             {
                 var doc = docs[d];
                 var score = JSON.parse(doc.details);
                 var timestamp = getTimestamp(score.duration);
 
-                recordItems(score.radiant.players, timestamp, radiantWin,matchid);
-                recordItems(score.dire.players, timestamp, !radiantWin,matchid);
+                record(score.radiant.players, timestamp, radiantWin,matchid, summaries, versuses.radiant);
+                record(score.dire.players, timestamp, !radiantWin,matchid, summaries, versuses.dire);
             }
 
+            recordVersus(score.radiant.players,radiantWin,versuses.dire);
+            recordVersus(score.dire.players,!radiantWin,versuses.radiant);
+            
+
+            summaries.forEach(function (item, key)
+            {
+                itemsummaries.update({itemid:item.item, heroid:item.hero},{$inc:{used:1, win: item.win}}, {upsert:true},errorlog)
+            })
         })
 
     });
@@ -191,6 +231,8 @@ exports.start = function ()
     itemdetails = datamgr.getItemDetails()
     matchdetails = datamgr.getMatchDetails()
     herosummaries = datamgr.getHeroSummaries();
+    herodetails = datamgr.getHeroDetails();
+    itemversuses = datamgr.getItemVersuses();
 
     cache = datamgr.getCaches();
     cache.add = function (id)

@@ -8,7 +8,16 @@ var echartshelper = function (chart, option)
             animation:false,
             tooltip: {
                 trigger: 'axis',
-                formatter: '{b}',
+                formatter: function (items)
+                {
+                    for (var i in items)
+                    {
+                        if (items[i].data )
+                        {
+                            return items[i].data[0]
+                        }
+                    }
+                },
             },
             grid: {
                 left: '0',
@@ -27,7 +36,7 @@ var echartshelper = function (chart, option)
                     }
                 },
             },
-            yAxis: {
+            yAxis: [{
                 name:'rate',
                 type: 'value',
                 min:0,
@@ -52,7 +61,19 @@ var echartshelper = function (chart, option)
                     }
                 }
             },
+            {
+                type:'value',
+                splitLine:{show:false},
+                axisLine:{
+                    lineStyle:{
+                        color: '#444'
+                    }
+                },
+            }],
             legend: {
+                textStyle:{
+                    color:"#aaa"
+                },
                 data:[],
             },
             series:[],
@@ -62,7 +83,7 @@ var echartshelper = function (chart, option)
     var helper = 
     {
         chart:chart,
-        series:{},
+        series:[],
         option:option,
         colors : ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'],  
 
@@ -71,40 +92,54 @@ var echartshelper = function (chart, option)
             return this.option;
         },
 
-        update: function(name, line)
+        update: function(line)
         {
-            var color = this.colors.shift();
-            
-            if (!line.lineStyle)
-                line.lineStyle = {normal:{color:color}};
+            // var color = this.colors.shift();
+            // if (!line.lineStyle)
+            //     line.lineStyle = {normal:{color:color}};
 
-            if (line.markLine && !line.markLine.lineStyle)
-                line.markLine.lineStyle = {normal:{color:color}};
+            // if (line.markLine && !line.markLine.lineStyle)
+            //     line.markLine.lineStyle = {normal:{color:color}};
 
-            this.series[name] = line;
+            for (var i in this.series)
+            {
+                var l = this.series[i];
+                if (l.name == line.name)
+                {
+                    this.series[i] = line;
+                    return;
+                }
+            }
+
+            this.series.push(line);
+
         },
 
         remove: function(name)
         {
-            this.color.unshift(this.series[name].lineStyle.normal.color)
-            this.series[name] = null;
+            for (var i in this.series) 
+            {
+                if (this.series[i].name == name)
+                {
+                    this.series.splice(i, 1);
+                    return;
+                }
+            }
         },
 
         refresh : function()
         {
-            var series = [];
             var legend = [];
             for(var i in this.series)
             {
                 var line = this.series[i]
-                series.push(line);
-                legend.push({name:line.name, icon:'none',textStyle:{color:line.lineStyle.normal.color}});
+                legend.push({name:line.name, icon:'pin'});
             }
 
-            this.option.series = series;
+            this.option.series = this.series;
             this.option.legend.data = legend;
 
-            this.chart.setOption(this.option);
+            this.chart.setOption(this.option,true);
             this.chart.resize();
         },   
 

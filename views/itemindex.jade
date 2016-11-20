@@ -24,7 +24,7 @@ block body
                 if (items[index].cost != 0 && items[index].recipe == 0)
                 {
                     var name = items[index].name.match(/item_(.*)/)[1];
-                    content += "<a href='item/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' /></a>";
+                    content += "<a href='item/" + name + "'><img class='normalImage' 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/items/" + name + "_lg.png' /></a>";
                 }
             }
 

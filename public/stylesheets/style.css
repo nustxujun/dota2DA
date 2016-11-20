@@ -1,6 +1,6 @@
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-  background-color: rgb(33,33,33);
+  background-color: #222;
   margin:0px;
 }
 
@@ -8,7 +8,7 @@ a {
   color: #00B7FF;
 }
 
-img{
+.normalImage{
   margin:0px;
   border: 1px solid black;
 }
@@ -24,7 +24,7 @@ img{
 
 .lable{   
     height: 50px;
-    min-width: 80px;
+    padding: 0 10 0 10;
     text-align: center;
     line-height: 50px;
     float: left;
@@ -36,18 +36,33 @@ img{
 }
 .checkbox{
   color:#888;
-  border:1px solid #888;
+  border:2px solid #888;
   border-radius:10px;
-  margin:10px;
-  padding:2px;
+  margin:0 5 0 5;
+  padding:2 5 2 6;
   cursor:pointer;
+  -moz-user-select: -moz-none;
+  -moz-user-select: none;
+  -o-user-select:none;
+  -khtml-user-select:none;
+  -webkit-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
 }
 .checkboxChecked{
   color:#222;
   background: #888;
-  border:1px solid #888;
+  border:2px solid #888;
   border-radius:10px;
-  margin:10px;
-  padding:2px;
+  
+  margin:0 5 0 5;
+  padding:2 5 2 6;
   cursor:pointer;
+  -moz-user-select: -moz-none;
+  -moz-user-select: none;
+  -o-user-select:none;
+  -khtml-user-select:none;
+  -webkit-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
 }

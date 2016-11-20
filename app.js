@@ -69,8 +69,8 @@ app.use(function(err, req, res, next) {
 });
 
 
-var collector = require('./collector/collector');
-collector.start()
+// var collector = require('./collector/collector');
+// collector.start()
 
 
 module.exports = app;

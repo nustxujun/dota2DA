@@ -23,7 +23,7 @@ block body
             for (var index in heroes)
             {
               var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
-              content += "<a href='hero/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' /></a>";
+              content += "<a href='hero/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' class='normalImage'/></a>";
               
             }
             div.innerHTML = content; 

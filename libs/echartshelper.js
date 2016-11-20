@@ -80,6 +80,37 @@ var echartshelper = function (chart, option)
         };
     }
 
+    function filter(data, range)
+    {
+        var ret = [];
+
+        var size = data.length;
+        for (var i = 0; i < size; ++i)
+        {
+            var value = 0;
+            var count = 0;
+            for (var j = -range; j <= range; ++j)
+            {
+                var index = j + i;
+                if (index < 0 || index >= size)
+                    continue;
+                count++;
+                var item = data[index];
+                if (typeof(item) == "array")
+                    value += item[1];
+                else    
+                    value += item;
+            }
+            value = value / count;
+            
+            if (typeof(data[i]) == "array")
+                ret.push([data[i][0],value]);
+            else
+                ret.push(value);
+        }
+        return ret;
+    }
+
     var helper = 
     {
         chart:chart,
@@ -94,13 +125,8 @@ var echartshelper = function (chart, option)
 
         update: function(line)
         {
-            // var color = this.colors.shift();
-            // if (!line.lineStyle)
-            //     line.lineStyle = {normal:{color:color}};
-
-            // if (line.markLine && !line.markLine.lineStyle)
-            //     line.markLine.lineStyle = {normal:{color:color}};
-
+            line.data = filter(line.data,2);
+            
             for (var i in this.series)
             {
                 var l = this.series[i];

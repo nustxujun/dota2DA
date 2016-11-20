@@ -2,23 +2,52 @@ extends frame
 
 
 block body
-    #hero(align="middle")
-        //- img( src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png')
-    #baselines(style="word-wrap:break-word; line-height:40px")
-        text(onclick="onChecked('gpm')" id="gpm").checkbox gpm 
+    #baselines(align="middle" style="word-wrap:break-word; line-height:40px; padding: 0 10 0 10;")
+        b(onclick="onChecked('gpm')" id="gpm").checkbox gpm
         b(onclick="onChecked('xpm')" id="xpm").checkbox xpm 
         b(onclick="onChecked('kills')" id="kills").checkbox kills 
         b(onclick="onChecked('deaths')" id="deaths").checkbox deaths 
         b(onclick="onChecked('assists')" id="assists").checkbox assists 
+        b(onclick="onChecked('lastHits')" id="lastHits").checkbox lastHits 
         b(onclick="onChecked('denies')" id="denies").checkbox denies 
         b(onclick="onChecked('level')" id="level").checkbox level 
-        b(onclick="onChecked('netWorth')" id="netWorth").checkbox net worth 
+        b(onclick="onChecked('netWorth')" id="netWorth").checkbox netWorth 
         b(onclick="onChecked('gold')" id="gold").checkbox gold 
-    #chart(style="width: 100%;height:400px")
-    #table
-        table(style="background:#111;width:80%;max-width:500px;min-width:300px;margin-left:auto;margin-right:auto;color:#888")
-            tbody(id="items")
-               
+
+    #chart(style="width:100%;height:1px" )
+    #table(style="min-width:300px;max-width:800px;overflow-x:hidden;padding: 0 0 0 0;max-height:50%")
+            table(style="background:#111;width:100%;color:#888;")
+                tbody(id="items")
+
+    div(style="height:50px")                                
+    #versus(style="min-width:300px;max-width:800px;color:#ccc")     
+        div(style="width:100%;padding:10") WORST VERSUS                            
+        table(style="background:#111;width:100%;color:#888;margin-left:auto;margin-right:auto")
+            tbody(id="versuses")
+                tr 
+                    td(style="width:20px;")
+                        div(style="background:#a00;width:20px;height:40px")
+                    td(style="width:80px")
+                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
+                    td
+                        div(style="background:green;width:100%;margin-left:0px;color:white;")
+                            p(style="margin-left:10px") 30%
+                tr 
+                    td(style="width:20px;")
+                        div(style="background:#a00;width:20px;height:40px")
+                    td(style="width:80px")
+                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
+                    td
+                        div(style="background:green;width:30%;margin-left:0px;color:white;")
+                            p(style="margin-left:10px") 30%
+                tr 
+                    td(style="width:20px;")
+                        div(style="background:#a00;width:20px;height:40px")
+                    td(style="width:80px")
+                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
+                    td
+                        div(style="background:green;width:30%;margin-left:0px;color:white;")
+                            p(style="margin-left:10px") 30%
 
     script(src="/libs/jquery-3.1.1.min.js")
     script(src="/libs/echarts.js")
@@ -46,6 +75,12 @@ block body
             {
                 document.getElementById(lastDiv).setAttribute("class", "checkbox")
                 helper.remove(lastDiv)
+                if (lastDiv == id)
+                {
+                    lastDiv = false;
+                    return;                    
+                }
+                lastDiv = id;
             }
             var e = document.getElementById(id);
             if (e.getAttribute("class") == "checkbox" )
@@ -62,7 +97,6 @@ block body
                 helper.remove(id)
                 draw();
             }
-            
         }
 
         function showdetails(item)
@@ -87,6 +121,7 @@ block body
                 })       
             }
         }
+
 
         function formatTime(time)
         {
@@ -130,34 +165,34 @@ block body
             {
                 var data = [];
 
-                //- for (var i in details)
-                //- {
-                //-     var d = details[i];
-                //-     if (!usedlimit(d.used) )
-                //-         continue;
-                    
-                //-     data.push([formatTime(d.timestamp), d.win / d.used]);
-                //- }
-
-                var size = details.length;
-                var range = 3;
-                for (var i = range; i < size - range; ++i)
+                for (var i in details)
                 {
-                    if (details[i].used < 10)
+                    var d = details[i];
+                    if (!usedlimit(d.used) )
                         continue;
-                    var win = 0;
-                    var used = 0;
-                    for (var j = -range; j <= range; ++j)
-                    {
-                        var d = details[i + j];
-                        win += d.win;
-                        used += d.used;
-                    }
-
-                    win = win / (range*2 + 1);
-                    used = used / (range*2 + 1);
-                    data.push([formatTime(details[i].timestamp),win / used])
+                    
+                    data.push([formatTime(d.timestamp), d.win / d.used]);
                 }
+
+                //- var size = details.length;
+                //- var range = 3;
+                //- for (var i = range; i < size - range; ++i)
+                //- {
+                //-     if (details[i].used < 10)
+                //-         continue;
+                //-     var win = 0;
+                //-     var used = 0;
+                //-     for (var j = -range; j <= range; ++j)
+                //-     {
+                //-         var d = details[i + j];
+                //-         win += d.win;
+                //-         used += d.used;
+                //-     }
+
+                //-     win = win / (range*2 + 1);
+                //-     used = used / (range*2 + 1);
+                //-     data.push([formatTime(details[i].timestamp),win / used])
+                //- }
 
                 charts[item] = {name:item, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},
                                 data:data};
@@ -183,7 +218,7 @@ block body
             
         }
 
-        $.get('/api/GetItemSummaries/?name=#{hero}', function (items) 
+        $.get('/api/GetItemSummaries/?hero=#{hero}', function (items) 
         {
             var content = "";
             for (var index in items)
@@ -193,7 +228,7 @@ block body
                 if (item.used < 10)
                     continue
                 var selected = "<td style='width:20px'><div style='width:20px;height:40px' id ='" + item.item + "' /></td>";
-                var image = "<td style='width:80px'><img style='height:40px;vertical-align:middle;' src='http://cdn.dota2.com/apps/dota2/images/items/" + item.item + "_lg.png' /></td>";
+                var image = "<td style='width:80px'><img style='height:40px;vertical-align:middle;' src='http://cdn.dota2.com/apps/dota2/images/items/" + item.item + "_lg.png' class='normalImage'/></td>";
                 var rate = "<td onclick='selectItem(\""+item.item+"\")'><div onclick='selectItem(\""+item.item+"\")' style='background:green;margin-left:0px;color:white;width:" + Math.floor(item.win * 100 /item.used ) + "%'><p onclick='selectItem(\""+item.item+"\")' style='margin-left:10px'>" + Math.floor(item.win * 100 /item.used)+"%</p></div></td>";
                 var tr = "<tr >" + selected + image+ rate + "</tr>"
                 content += tr;
@@ -210,6 +245,8 @@ block body
             draw();
         })        
 
+        helper.update({name:'1',type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}],symbol:'none', silent: true, animation: false},
+                             data:[0.1,0.9,0.2,0.9,0.23,0.7,0.405,0.3,0.8,0.234,0.8,0.23,0.6,0.678,0.1,0.768,0.2,0.678,0.3,0.678,0.42,0.34,0.2,0.342,0.34,0.2,0.432,0.23,0.42,0.35,0.456,0.546,0.7,0.67,0.8]})
         draw();
   
   

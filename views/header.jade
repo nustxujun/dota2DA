@@ -11,6 +11,11 @@ style(type="text/css").
                 li(id="item").lable item
             a(href="/about").lableLink  
                 li(id="about").lable about
-            - if (temp)   
+            - if (hero)   
+                a(href="" style="").lableLink 
+                    img( src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png' style="float: right;height:49px;padding:0;border: 1px solid #222;" ).lable
+                    //- li(style="background:#222;float: right;").lable #{hero}
+            -if (item)
                 a(href="").lableLink 
-                    li(style="background:#222;float: right;").lable #{hero}
+                    img( src='http://cdn.dota2.com/apps/dota2/images/items/#{item}_lg.png'  style="float: right;height:49px;padding:0;border: 1px solid #222;" ).lable
+                    

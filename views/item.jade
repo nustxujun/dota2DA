@@ -2,4 +2,141 @@ extends frame
 
 
 block body
-    img(src='http://cdn.dota2.com/apps/dota2/images/items/#{item}_lg.png')
+    #chart(style="width:100%;height:1px")
+    #table(style="min-width:300px;max-width:800px;overflow-x:hidden;padding: 0 0 0 0;")
+        table(style="background:#111;width:100%;color:#888;")
+            tbody(id="heros")
+                tr 
+                    td(style="width:20px;")
+                        div(style="background:green;width:20px;height:40px")
+                    td(style="width:80px")
+                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
+                    td
+                        div(style="background:green;width:100%;margin-left:0px;color:white; border-radius:2px;")
+                            p(style="margin-left:10px") 30%
+                tr 
+                    td(style="width:20px;")
+                        div(style="background:green;width:20px;height:40px")
+                    td(style="width:80px")
+                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
+                    td
+                        div(style="background:green;width:30%;margin-left:0px;color:white;border-radius:2px;")
+                            p(style="margin-left:10px") 30%
+                tr 
+                    td(style="width:20px;")
+                        div(style="background:green;width:20px;height:40px")
+                    td(style="width:80px")
+                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
+                    td
+                        div(style="background:green;width:30%;margin-left:0px;color:white;border-radius:2px;")
+                            p(style="margin-left:10px") 30%
+    script(src="/libs/jquery-3.1.1.min.js")
+    script(src="/libs/echarts.js")
+    script(src="/libs/echartshelper.js")
+
+
+    script(stype="text/javascript").
+        var xAxisData = [];
+        for (var i = 0; i < 10800; i+= 10)
+             xAxisData.push( formatTime(i));
+
+        var charts = {};
+        var div = document.getElementById('chart');
+        var myChart = echarts.init(div);
+        var helper = echartshelper(myChart);
+        var options = helper.getOptions();
+        options.xAxis.data = xAxisData;
+
+        function formatTime(time)
+        {
+            var min = Math.floor(time / 60);
+            var sec = time % 60;
+            if (min == 0)
+                return sec + '"';
+            else if (sec == 0)
+                return min + " '00" + '"';
+            else                
+                return min + "' " + sec + '"';
+        }
+
+        function draw()
+        {
+            var height = div.clientWidth /2.5;
+            if (height < 250) height = 250;
+            div.style.height = height;
+
+            helper.refresh()
+        }
+
+        window.onresize =function(){ draw();}  
+
+        function usedlimit(num)
+        {
+            return num > 100;
+        }
+
+        function getDetails(hero)
+        {
+            if (charts[hero]) 
+            {
+                helper.update( charts[hero]);
+                draw();
+                return;
+            }
+
+            $.get('/api/GetItemDetails/?item=#{item}&hero=' + hero , function (details) 
+            {
+                var data = [];
+
+                for (var i in details)
+                {
+                    var d = details[i];
+                    if (!usedlimit(d.used) )
+                        continue;
+                    
+                    data.push([formatTime(d.timestamp), d.win / d.used]);
+                }
+
+                charts[hero] = {name:hero, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},
+                                data:data};
+                helper.update(charts[hero]);
+                draw();
+            })
+        }
+
+        function selectItem(hero)
+        {
+            var sel = document.getElementById(hero);
+            if ( sel.style.background == "green")
+            {
+                sel.style.background = "#111";
+                helper.remove(hero) 
+                draw();
+            }
+            else
+            {
+                sel.style.background = "green"; 
+                getDetails(hero)
+            }
+        }
+
+        $.get('/api/GetItemSummaries/?item=#{item}', function (heros) 
+        {
+            var content = "";
+            for (var index in heros)
+            {
+
+                var hero = heros[index];
+                if (hero.used < 10)
+                    continue
+                var selected = "<td style='width:20px'><div style='width:20px;height:40px' id ='" + hero.hero + "' /></td>";
+                var image = "<td style='width:80px'><img style='height:40px;vertical-align:middle;' src='http://cdn.dota2.com/apps/dota2/images/items/" + hero.hero + "_lg.png' class='normalImage'/></td>";
+                var rate = "<td onclick='selectItem(\""+hero.hero+"\")'><div onclick='selectItem(\""+hero.hero+"\")' style='background:green;margin-left:0px;color:white;width:" + Math.floor(hero.win * 100 /hero.used ) + "%'><p onclick='selectItem(\""+hero.hero+"\")' style='margin-left:10px'>" + Math.floor(hero.win * 100 /hero.used)+"%</p></div></td>";
+                var tr = "<tr >" + selected + image+ rate + "</tr>"
+                content += tr;
+            }
+
+            document.getElementById("heros").innerHTML = content; 
+        })
+
+        draw();

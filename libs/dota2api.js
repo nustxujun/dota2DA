@@ -66,8 +66,11 @@ function callImpl(method, args, callback)
                 }
                 catch(e)
                 {
-                    logger.log(data, "error")
+                    
                     logger.log("failed to parse json data, in dota2api", "error");
+					logger.log("failed to get response " + url,"error");
+					callback(result,"fail to parse json data");
+					
                 }
                 callback(result);
             }

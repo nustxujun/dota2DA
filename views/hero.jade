@@ -114,14 +114,15 @@ block body
             }
             else
             {
-                $.get('/api/GetHeroDetails/?name=#{hero}', function (ret) 
-                {
-                    herodetails = ret;
-                    showdetails(item);
-                })       
+  
             }
         }
 
+                        $.get('/api/GetHeroDetails/?name=#{hero}', function (ret) 
+                {
+                    herodetails = ret;
+                    showdetails(item);
+                })     
 
         function formatTime(time)
         {

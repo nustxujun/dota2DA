@@ -11,27 +11,34 @@ var items;
 var itemMap = {};
 var itemNameMap = {};
 
-function processResult(ret, single)
+function processResult(data, single)
 {
-    if (!single && typeof(ret) == "array")
+    if (!single)
     {
-        for(var i in ret)
-            processResult(ret[i], true);
+        var ret = [];
+        for(var i in data)
+        {
+            var item = data[i]
+            ret.push(processResult(item, true));
+        }
+        return ret;
     }
     else
     {
-        delete ret._id;
-        if (ret.heroid)
-        {
-            ret.hero = heroNameMap[ret.heroid];
-            delete ret.heroid;
-        }
+        var ret = {};
+        if (data.heroid)
+            ret.hero = heroNameMap[data.heroid];
 
-        if (ret.itemid)
+        if (data.itemid)
+            ret.item = itemNameMap[data.itemid];
+
+        var mems = ["play", "win", "gpm","xpm","kills","deaths","assists","lastHits", "denies", "heroDamage","towerDamage","goldSpent", "timestamp","used","netWorth","level","matchid","details","gold"]
+        for (var i in mems)
         {
-            ret.item = itemNameMap[ret.itemid];
-            delete ret.itemid;
+            var index = mems[i]
+            ret[index] = data[index]
         }
+        return ret;
     }
 }
 
@@ -75,8 +82,10 @@ router.get("/GetItems", function(req, res, next) {
 router.get("/GetItemSummaries", function(req, res, next) {
     var itemsummaries = datamgr.getItemSummaries();
     var condition = {};
-    condition.itemid = itemMap[req.query.item];
-    condition.heroid = heroMap[req.query.hero];
+    if (req.query.item)
+        condition.itemid = itemMap[req.query.item];
+    if (req.query.hero)
+        condition.heroid = heroMap[req.query.hero];
     itemsummaries.find(condition, null, {sort:{used: -1}},function (err, docs)
     {
         if (err)
@@ -85,8 +94,8 @@ router.get("/GetItemSummaries", function(req, res, next) {
         }
         else
         {
-            processResult(docs)
-            res.send(docs);
+           console.log()
+            res.send( processResult(docs));
         }
     })
 });
@@ -94,7 +103,7 @@ router.get("/GetItemSummaries", function(req, res, next) {
 router.get("/GetHeroSummaries", function(req, res, next) {
     var herosummaries = datamgr.getHeroSummaries();
     var condition = {};
-    condition.heroid = heroMap[req.query.hero];
+    condition.heroid = heroMap[req.query.name];
     herosummaries.findOne(condition,function (err, doc)
     {
         if (err)
@@ -103,8 +112,8 @@ router.get("/GetHeroSummaries", function(req, res, next) {
         }
         else
         {
-            processResult(doc);
-            res.send(doc);
+            if (doc)
+                res.send(processResult(doc, true));
         }
     })
 });
@@ -118,8 +127,7 @@ router.get("/GetHeroDetails", function(req, res, next) {
             logger.log(err, "error")
         else
         {
-            processResult(docs);
-            res.send(docs)
+            res.send(processResult(docs))
         }
     })
 });
@@ -134,16 +142,17 @@ router.get("/GetItemDetails", function(req, res, next) {
 
     var itemdetails = datamgr.getItemDetails();
     var condition = {};
-    condition.itemid = itemMap[req.query.item];
-    condition.heroid = heroMap[req.query.hero];
+    if (req.query.item)
+        condition.itemid = itemMap[req.query.item];
+    if (req.query.hero)
+        condition.heroid = heroMap[req.query.hero];
     itemdetails.find(condition,null, {sort:{timestamp:1}},function (err, docs)
     {
         if (err)
             logger.log(err, "error")
         else
         {
-            processResult(docs)
-            res.send(docs);
+            res.send(processResult(docs));
         }
     })
 });

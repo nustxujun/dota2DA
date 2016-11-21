@@ -27,7 +27,11 @@ function getTimestamp(duration)
 function errorlog(err) 
 { 
     if (err) 
-        logger.log(err,"error") 
+    {
+        logger.log(err,"error") ;
+        return false;
+    }
+
     else 
         return true; 
 };
@@ -143,6 +147,8 @@ function process(matchid, timestamp)
 {
     if (getTime() - timestamp < 600000) //process after end of matches in ten min
         return;
+		
+	logger.log("request match " + matchid)	
     dota2api.GetMatchDetails(matchid, function(data,err)
     {
         if (err || data.result.error == "Match ID not found") 
@@ -277,7 +283,15 @@ exports.start = function ()
     var timer = schedule.scheduleJob(rule, function()
     {
         collect();
+       
+    });
+	
+	rule = new schedule.RecurrenceRule();
+    rule.second = 59;
+    var timer = schedule.scheduleJob(rule, function()
+    {
         cache.forEach(process)
     });
+	
 
 }

@@ -96,14 +96,14 @@ var echartshelper = function (chart, option)
                     continue;
                 count++;
                 var item = data[index];
-                if (typeof(item) == "array")
+                if (typeof(item) == "object")
                     value += item[1];
                 else    
                     value += item;
             }
             value = value / count;
             
-            if (typeof(data[i]) == "array")
+            if (typeof(data[i]) == "object")
                 ret.push([data[i][0],value]);
             else
                 ret.push(value);

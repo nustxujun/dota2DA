@@ -20,34 +20,11 @@ block body
                 tbody(id="items")
 
     div(style="height:50px")                                
-    #versus(style="min-width:300px;max-width:800px;color:#ccc")     
-        div(style="width:100%;padding:10") WORST VERSUS                            
+    #versus(style="min-width:300px;max-width:800px;color:#ccc;padding: 0 0 0 0;")     
+        div(style="padding:10") WORST VERSUS                            
         table(style="background:#111;width:100%;color:#888;margin-left:auto;margin-right:auto")
             tbody(id="versuses")
-                tr 
-                    td(style="width:20px;")
-                        div(style="background:#a00;width:20px;height:40px")
-                    td(style="width:80px")
-                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
-                    td
-                        div(style="background:green;width:100%;margin-left:0px;color:white;")
-                            p(style="margin-left:10px") 30%
-                tr 
-                    td(style="width:20px;")
-                        div(style="background:#a00;width:20px;height:40px")
-                    td(style="width:80px")
-                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
-                    td
-                        div(style="background:green;width:30%;margin-left:0px;color:white;")
-                            p(style="margin-left:10px") 30%
-                tr 
-                    td(style="width:20px;")
-                        div(style="background:#a00;width:20px;height:40px")
-                    td(style="width:80px")
-                        img(style="height:40px;vertical-align: middle;" src="http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png")
-                    td
-                        div(style="background:green;width:30%;margin-left:0px;color:white;")
-                            p(style="margin-left:10px") 30%
+
 
     script(src="/libs/jquery-3.1.1.min.js")
     script(src="/libs/echarts.js")
@@ -78,6 +55,7 @@ block body
                 if (lastDiv == id)
                 {
                     lastDiv = false;
+                    draw();
                     return;                    
                 }
                 lastDiv = id;
@@ -149,7 +127,7 @@ block body
 
         function usedlimit(num)
         {
-            return num > 100;
+            return num > 20;
         }
 
         function getDetails(item)
@@ -164,7 +142,6 @@ block body
             $.get('/api/GetItemDetails/?hero=#{hero}&item=' + item , function (details) 
             {
                 var data = [];
-
                 for (var i in details)
                 {
                     var d = details[i];
@@ -173,6 +150,7 @@ block body
                     
                     data.push([formatTime(d.timestamp), d.win / d.used]);
                 }
+
 
                 //- var size = details.length;
                 //- var range = 3;
@@ -240,13 +218,10 @@ block body
         $.get('/api/GetHeroSummaries/?name=#{hero}', function (ret) 
         {
             var rate = ret.win / ret.play;
-            
             helper.update({name:"#{hero}", type:'line', smooth:true,  symbol:'none', data:[rate],markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false}})
             draw();
         })        
 
-        helper.update({name:'1',type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}],symbol:'none', silent: true, animation: false},
-                             data:[0.1,0.9,0.2,0.9,0.23,0.7,0.405,0.3,0.8,0.234,0.8,0.23,0.6,0.678,0.1,0.768,0.2,0.678,0.3,0.678,0.42,0.34,0.2,0.342,0.34,0.2,0.432,0.23,0.42,0.35,0.456,0.546,0.7,0.67,0.8]})
         draw();
   
   

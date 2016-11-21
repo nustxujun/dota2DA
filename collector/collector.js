@@ -27,7 +27,11 @@ function getTimestamp(duration)
 function errorlog(err) 
 { 
     if (err) 
-        logger.log(err,"error") 
+    {
+        logger.log(err,"error") ;
+        return false;
+    }
+
     else 
         return true; 
 };

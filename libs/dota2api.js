@@ -18,8 +18,8 @@ var requestList = new Array();
 
 function call(method, args, callback)
 {
-    requestList.push({method: method, args: args, callback: callback});
-    //callImpl(method, args, callback);
+    //requestList.push({method: method, args: args, callback: callback});
+    callImpl(method, args, callback);
 }
 
 function callImpl(method, args, callback)
@@ -42,6 +42,9 @@ function callImpl(method, args, callback)
                 "/v001/?key=C482D5B27FD23B5F10F38096D15E8995" + 
                 paras;
     
+
+    
+
     //logger.log("call " + url);
     var req = http.get(url, function (response)
     {
@@ -74,10 +77,12 @@ function callImpl(method, args, callback)
                 }
                 callback(result);
             }
+            clearTimeout( timeout );
         }).on("error", function (err)
         {
             logger.log("failed to get response " + url,"error");
             logger.log(err,"error");
+            clearTimeout( timeout );
         })
     })
 
@@ -85,7 +90,15 @@ function callImpl(method, args, callback)
         {
             logger.log("failed to call " + url,"error");
             logger.log(err,"error");
+            clearTimeout( timeout );
         })
+
+    var timeout = setTimeout(10000, function ()
+    {
+        logger.log("request " + url + " is timeout")
+        req.abort();
+        callback({},"timeout");
+    })
     //req.end();
 }
 

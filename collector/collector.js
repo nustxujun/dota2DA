@@ -109,7 +109,7 @@ function record(players, timestamp, winner, matchid, summaries, versuses)
             inc.win = winner;
 
             summaries.set(item.toString() + p.hero_id.toString(), {item:item, hero: p.hero_id, win: winner})
-            itemdetails.update({itemid:item, heroid:p.hero_id, timestamp : timestamp }, {$inc:inc},{upsert: true});
+            itemdetails.update({itemid:item, heroid:p.hero_id, timestamp : timestamp }, {$inc:inc},{upsert: true}).exec();
         }
 
         var inc = 
@@ -126,7 +126,7 @@ function record(players, timestamp, winner, matchid, summaries, versuses)
             netWorth:p.net_worth,
             level: p.level,
         }
-        herodetails.update({heroid:p.hero_id, timestamp:timestamp}, {$inc:inc},{upsert:true});
+        herodetails.update({heroid:p.hero_id, timestamp:timestamp}, {$inc:inc},{upsert:true}).exec();
     }
 }
 
@@ -138,7 +138,7 @@ function recordVersus(players, win, versuses)
         for (var i = 0; i < 5; ++i)
         {
             var p = players[i];
-            itemversuses.update({heroid:p.hero_id, itemid: item}, {$inc:{win:win, used:1}},{upsert: true})
+            itemversuses.update({heroid:p.hero_id, itemid: item}, {$inc:{win:win, used:1}},{upsert: true}).exec()
         }
     }
 }
@@ -196,7 +196,7 @@ function process(matchid, timestamp)
                 play:1,
                 win: ((i < 5) == radiantWin)
             }
-            herosummaries.update({heroid: p.hero_id}, {$inc:inc}, {upsert:true})
+            herosummaries.update({heroid: p.hero_id}, {$inc:inc}, {upsert:true}).exec()
         }
 
         matchdetails.find({matchid:matchid}, function (err, docs)
@@ -222,7 +222,7 @@ function process(matchid, timestamp)
 
             summaries.forEach(function (item, key)
             {
-                itemsummaries.update({itemid:item.item, heroid:item.hero},{$inc:{used:1, win: item.win}}, {upsert:true})
+                itemsummaries.update({itemid:item.item, heroid:item.hero},{$inc:{used:1, win: item.win}}, {upsert:true}).exec()
             })
         })
 
@@ -243,7 +243,7 @@ exports.start = function ()
     cache = datamgr.getCaches();
     cache.add = function (id)
     {
-        cache.update({matchid:id}, {$set:{timestamp:getTime()}},{upsert:true})
+        cache.update({matchid:id}, {$set:{timestamp:getTime()}},{upsert:true}).exec();
     }
 
     cache.delete = function (id)

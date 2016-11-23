@@ -63,19 +63,18 @@ function callImpl(method, args, callback)
             }
             else
             {
-                var result = {};
+                
                 try{
-                   result = JSON.parse(data);
+                    var result = JSON.parse(data);
+                    callback(result);
                 }
                 catch(e)
                 {
                     
-                    logger.log("failed to parse json data, in dota2api", "error");
+                    //logger.log("failed to parse json data, in dota2api", "error");
 					logger.log("failed to get response " + url,"error");
-					callback(result,"fail to parse json data");
-					
+					callback(data,"fail to parse json data");
                 }
-                callback(result);
             }
             clearTimeout( timeout );
         }).on("error", function (err)

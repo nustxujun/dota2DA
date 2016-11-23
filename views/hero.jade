@@ -141,7 +141,7 @@ block body
         {
             if (charts[item]) 
             {
-                helper.update( charts[item]);
+                helper.update({name:item, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},data:charts[item]})
                 draw();
                 return;
             }
@@ -179,10 +179,8 @@ block body
                 //-     data.push([formatTime(details[i].timestamp),win / used])
                 //- }
 
-                charts[item] = {name:item, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},
-                                data:data};
-                helper.update(charts[item]);
-                draw();
+                charts[item] = data;
+                getDetails(item)
             })
         }
         

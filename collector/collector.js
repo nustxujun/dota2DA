@@ -3,6 +3,7 @@ var http = require('http')
 var datamgr = require("./datamgr.js")
 var dota2api = require("../libs/dota2api")
 var logger = require("../libs/logger")
+var serialtask = require("./serialtask");
 
 var interval = 10;
 
@@ -13,6 +14,8 @@ var cache
 var herosummaries
 var herodetails;
 var itemversuses;
+var itemversussummaries;
+var heroversuses;
 
 function getTime()
 {
@@ -35,6 +38,14 @@ function errorlog(err)
     else 
         return true; 
 };
+
+function update(collection, condition,doc, option)
+{
+    serialtask.add(function (callback)
+    {
+        collection.update(condition, doc, option,callback);
+    })
+}
 
 function push(data)
 {
@@ -96,20 +107,21 @@ function record(players, timestamp, winner, matchid, summaries, versuses)
     for (var i = 0; i < 5; ++i)
     {
         var p = players[i];
-
+        versuses[p.hero_id] = {};
+        var v = versuses[p.hero_id];
         for (var j = 0; j < 6; ++j)
         {
             var item = p["item" + j];
             if (item == 0)
                 continue;
 
-            versuses[item] = true;
+            v[item] = true;
 
             var inc = {used:1, win:0};
             inc.win = winner;
 
             summaries.set(item.toString() + p.hero_id.toString(), {item:item, hero: p.hero_id, win: winner})
-            itemdetails.update({itemid:item, heroid:p.hero_id, timestamp : timestamp }, {$inc:inc},{upsert: true}).exec();
+            update(itemdetails,{itemid:item, heroid:p.hero_id, timestamp : timestamp }, {$inc:inc},{upsert: true})
         }
 
         var inc = 
@@ -126,26 +138,30 @@ function record(players, timestamp, winner, matchid, summaries, versuses)
             netWorth:p.net_worth,
             level: p.level,
         }
-        herodetails.update({heroid:p.hero_id, timestamp:timestamp}, {$inc:inc},{upsert:true}).exec();
+        update(herodetails,{heroid:p.hero_id, timestamp:timestamp}, {$inc:inc},{upsert:true});
     }
 }
 
 function recordVersus(players, win, versuses)
 {
-    for (var index in versuses)
+    for (var opponent in versuses)
     {
-        var item = index;
+        var items = versuses[opponent];
         for (var i = 0; i < 5; ++i)
         {
             var p = players[i];
-            itemversuses.update({heroid:p.hero_id, itemid: item}, {$inc:{win:win, used:1}},{upsert: true}).exec()
+            for (var item in items)
+                update(itemversuses,{heroid:p.hero_id, itemid: item, opponent:opponent}, {$inc:{win:win, used:1}},{upsert: true})
+            
+            update(heroversuses,{heroid:p.hero_id, opponent:opponent}, {$inc:{play:1, win:win}},{upsert:true})
+            update(itemversussummaries,{heroid:p.hero_id, opponentitemid:item}, {$inc:{used:1, win:win}},{upsert:true})
         }
     }
 }
 
 function process(matchid, timestamp)
 {
-    if (getTime() - timestamp < 600000) //process after end of matches in ten min
+    if (serialtask.size() > 10 || getTime() - timestamp < 600000) //process after end of matches in ten min
         return;
 		
 	logger.log("request match " + matchid)	
@@ -196,12 +212,12 @@ function process(matchid, timestamp)
                 play:1,
                 win: ((i < 5) == radiantWin)
             }
-            herosummaries.update({heroid: p.hero_id}, {$inc:inc}, {upsert:true}).exec()
+            update(herosummaries,{heroid: p.hero_id}, {$inc:inc}, {upsert:true})
         }
 
         matchdetails.find({matchid:matchid}, function (err, docs)
         {
-            if (!errorlog(err))
+            if (!errorlog(err) || docs.length == 0)
                 return;
 
             var summaries = new Map()
@@ -222,7 +238,7 @@ function process(matchid, timestamp)
 
             summaries.forEach(function (item, key)
             {
-                itemsummaries.update({itemid:item.item, heroid:item.hero},{$inc:{used:1, win: item.win}}, {upsert:true}).exec()
+                update(itemsummaries,{itemid:item.item, heroid:item.hero},{$inc:{used:1, win: item.win}}, {upsert:true})
             })
         })
 
@@ -239,11 +255,14 @@ exports.start = function ()
     herosummaries = datamgr.getHeroSummaries();
     herodetails = datamgr.getHeroDetails();
     itemversuses = datamgr.getItemVersuses();
+    itemversussummaries = datamgr.getItemVersusSummaries();
+    heroversuses = datamgr.getHeroVersuses();
 
     cache = datamgr.getCaches();
     cache.add = function (id)
     {
-        cache.update({matchid:id}, {$set:{timestamp:getTime()}},{upsert:true}).exec();
+        update(cache,{matchid:id}, {$set:{timestamp:getTime()}},{upsert:true});
+        
     }
 
     cache.delete = function (id)
@@ -282,7 +301,7 @@ exports.start = function ()
     });
 	
 	rule = new schedule.RecurrenceRule();
-    rule.second = 59;
+    rule.second = 5;
     var timer = schedule.scheduleJob(rule, function()
     {
         cache.forEach(process)

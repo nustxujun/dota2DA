@@ -93,12 +93,12 @@ function callImpl(method, args, callback)
             clearTimeout( timeout );
         })
 
-    var timeout = setTimeout(10000, function ()
+    var timeout = setTimeout( function ()
     {
         logger.log("request " + url + " is timeout")
         req.abort();
         callback({},"timeout");
-    })
+    },60000)
     //req.end();
 }
 

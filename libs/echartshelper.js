@@ -8,16 +8,9 @@ var echartshelper = function (chart, option)
             animation:false,
             tooltip: {
                 trigger: 'axis',
-                formatter: function (items)
-                {
-                    for (var i in items)
-                    {
-                        if (items[i].data )
-                        {
-                            return items[i].data[0]
-                        }
-                    }
+                axisPointer:{
                 },
+
             },
             grid: {
                 left: '0',
@@ -104,9 +97,9 @@ var echartshelper = function (chart, option)
             value = value / count;
             
             if (typeof(data[i]) == "object")
-                ret.push([data[i][0],value]);
+                ret.push([data[i][0],value.toFixed(2)]);
             else
-                ret.push(value);
+                ret.push(value.toFixed(2));
         }
         return ret;
     }

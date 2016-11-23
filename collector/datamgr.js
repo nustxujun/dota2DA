@@ -42,8 +42,12 @@ var herodetailsSchema =
 var herodetailsIndex = {heroid:1, timestamp:1}
 var cachesSchema = {matchid: Number, timestamp:Number};
 var cachesIndex = {matchid:1};
-var itemversusesSchema = {itemid:Number, heroid:Number, used:Number, win:Number};
-var itemversusesIndex = {itemid:1, heroid:1};
+var itemversusesSchema = {itemid:Number, heroid:Number, opponent:Number ,used:Number, win:Number};
+var itemversusesIndex = {itemid:1, heroid:1, opponent:1};
+var itemversussummariesSchema = {opponentitemid:Number, heroid:Number, used:Number, win:Number};
+var itemversussummariesIndex = {opponentitemid:1, heroid:1};
+var heroversusesSchema = {heroid:Number, opponent:Number, play:Number, win:Number};
+var heroversusesIndex = {heroid:1, opponent:1};
 
 
 function onEvent(event, err)
@@ -100,4 +104,14 @@ exports.getMatchDetails = function ()
 exports.getItemVersuses = function()
 {
     return getCollection("itemversuses", itemversusesSchema, itemversusesIndex);
+}
+
+exports.getHeroVersuses = function()
+{
+    return getCollection("heroversuses", heroversusesSchema, heroversusesIndex);
+}
+
+exports.getItemVersusSummaries = function()
+{
+    return getCollection("itemversussummaries", itemversussummariesSchema, itemversussummariesIndex);
 }

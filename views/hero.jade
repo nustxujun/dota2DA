@@ -1,7 +1,12 @@
 extends frame
 
-
+block submenu
+    div(style="height:10px;width:100%")
+    #menu
+        div(href="/heroindex").lableLink
+            li(id="hero").lable charts
 block body
+
     #baselines(align="middle" style="word-wrap:break-word; line-height:40px; padding: 0 10 0 10;")
         b(onclick="onChecked('gpm')" id="gpm").checkbox gpm
         b(onclick="onChecked('xpm')" id="xpm").checkbox xpm 
@@ -21,7 +26,7 @@ block body
 
     div(style="height:50px")                                
     #versus(style="min-width:300px;max-width:800px;color:#ccc;padding: 0 0 0 0;")     
-        div(style="padding:10") WORST VERSUS                            
+        div(style="padding:10") WORST VERSUS         #{hero} win rate                        
         table(style="background:#111;width:100%;color:#888;margin-left:auto;margin-right:auto")
             tbody(id="versuses")
 
@@ -223,6 +228,25 @@ block body
             helper.update({name:"#{hero}", type:'line', smooth:true,  symbol:'none', data:[rate],markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false}})
             draw();
         })        
+
+        $.get('/api/GetItemVersuses/?hero=#{hero}', function (items) 
+        {
+            var content = "";
+            for (var index in items)
+            {
+
+                var item = items[index];
+                if (item.used < 10)
+                    continue
+                var selected = "<td style='width:20px'><div style='width:20px;height:40px' id ='" + item.item + "' /></td>";
+                var image = "<td style='width:80px'><img style='height:40px;vertical-align:middle;' src='http://cdn.dota2.com/apps/dota2/images/items/" + item.item + "_lg.png' class='normalImage'/></td>";
+                var rate = "<td onclick='selectItem(\""+item.item+"\")'><div style='background:green;margin-left:0px;color:white;width:" + Math.floor(item.win * 100 /item.used ) + "%'><p onclick='selectItem(\""+item.item+"\")' style='margin-left:10px'>" + Math.floor(item.win * 100 /item.used)+"%</p></div></td>";
+                var tr = "<tr >" + selected + image+ rate + "</tr>"
+                content += tr;
+            }
+
+            document.getElementById("versuses").innerHTML = content; 
+        })
 
         draw();
   

@@ -94,7 +94,6 @@ router.get("/GetItemSummaries", function(req, res, next) {
         }
         else
         {
-           console.log()
             res.send( processResult(docs));
         }
     })
@@ -157,6 +156,25 @@ router.get("/GetItemDetails", function(req, res, next) {
     })
 });
 
+router.get("/GetItemVersuses", function(req, res, next) {
+    var itemversuses = datamgr.getItemVersuses();
+    var condition = {};
+    if (req.query.item)
+        condition.itemid = itemMap[req.query.item];
+    if (req.query.hero)
+        condition.heroid = heroMap[req.query.hero];
+    itemversuses.find(condition, null, {sort:{used: -1}},function (err, docs)
+    {
+        if (err)
+        {
+            logger.log(err, "error")
+        }
+        else
+        {
+            res.send( processResult(docs));
+        }
+    })
+});
 
 
 

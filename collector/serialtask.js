@@ -1,7 +1,7 @@
 
 
 var tasks = [];
-
+var waiting = false;
 exports.add = function (task)
 {
     tasks.push(task);
@@ -18,17 +18,38 @@ exports.size = function()
     return tasks.length;
 }
 
+var count = 0;
 function complete(err)
 {
-    if (tasks.length > 0)
-        console.log(tasks.length)
-    next();
+    count--;
+    if (count == 0)
+	{
+        waiting = false;
+		setTimeout(function ()
+		{
+			console.log(tasks.length)
+			waiting = false;
+			next("from complete");
+		}, 5)
+	}
 }
 
-function next()
+function next(args)
 {
-    if (tasks.length == 0)
+    if (waiting || tasks.length == 0 )
         return;
-    var task = tasks.shift();
-    task(complete);
+
+    for (var i = 0 ; i < 10; ++i)
+    {
+        var task = tasks.shift();
+        if (task)
+        {
+            waiting = true;
+            count++;
+            task(complete);
+        }
+        else
+            break;
+    }
+
 }

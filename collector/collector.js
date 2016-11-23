@@ -161,7 +161,7 @@ function recordVersus(players, win, versuses)
 
 function process(matchid, timestamp)
 {
-    if (serialtask.size() > 10 || getTime() - timestamp < 600000) //process after end of matches in ten min
+    if (serialtask.size() > 10 ) 
         return;
 		
 	logger.log("request match " + matchid)	
@@ -276,8 +276,9 @@ exports.start = function ()
 
     cache.forEach = function (callback)
     {
-        cache.find({}, function (err, docs)
+        cache.find({timestamp:{$lt:getTime() - 60000 }}, function (err, docs)
         {
+            console.log("find " + docs.length)
             for (var i in docs)
             {
                 if(callback(docs[i].matchid, docs[i].timestamp))
@@ -297,15 +298,8 @@ exports.start = function ()
     var timer = schedule.scheduleJob(rule, function()
     {
         collect();
-       
-    });
-	
-	rule = new schedule.RecurrenceRule();
-    rule.second = 5;
-    var timer = schedule.scheduleJob(rule, function()
-    {
         cache.forEach(process)
     });
-	
+
 
 }

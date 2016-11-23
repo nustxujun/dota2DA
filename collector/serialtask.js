@@ -27,7 +27,6 @@ function complete(err)
         waiting = false;
 		setTimeout(function ()
 		{
-			console.log(tasks.length)
 			waiting = false;
 			next("from complete");
 		}, 5)

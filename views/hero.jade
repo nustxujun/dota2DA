@@ -2,34 +2,39 @@ extends frame
 
 block submenu
     div(style="height:10px;width:100%")
-    #menu
-        div(href="/heroindex").lableLink
-            li(id="hero").lable charts
+    #menu(align="middle" style="height:40px;padding: 0 10 0 10;")
+        li(id="itemwinrate" onclick="onClickSubMenuBtn('itemwinrate')").submenubtn items
+        li(id="versuswinrate" onclick="onClickSubMenuBtn('versuswinrate')").submenubtn versus
+        
 block body
+    #itemwinrate_page(style="overflow:hidden;height:0")
+        #baselines(align="middle" style="word-wrap:break-word; line-height:40px; padding: 0 10 0 10;")
+            b(onclick="onChecked('gpm')" id="gpm").checkbox gpm
+            b(onclick="onChecked('xpm')" id="xpm").checkbox xpm 
+            b(onclick="onChecked('kills')" id="kills").checkbox kills 
+            b(onclick="onChecked('deaths')" id="deaths").checkbox deaths 
+            b(onclick="onChecked('assists')" id="assists").checkbox assists 
+            b(onclick="onChecked('lastHits')" id="lastHits").checkbox lastHits 
+            b(onclick="onChecked('denies')" id="denies").checkbox denies 
+            b(onclick="onChecked('level')" id="level").checkbox level 
+            b(onclick="onChecked('netWorth')" id="netWorth").checkbox netWorth 
+            b(onclick="onChecked('gold')" id="gold").checkbox gold 
 
-    #baselines(align="middle" style="word-wrap:break-word; line-height:40px; padding: 0 10 0 10;")
-        b(onclick="onChecked('gpm')" id="gpm").checkbox gpm
-        b(onclick="onChecked('xpm')" id="xpm").checkbox xpm 
-        b(onclick="onChecked('kills')" id="kills").checkbox kills 
-        b(onclick="onChecked('deaths')" id="deaths").checkbox deaths 
-        b(onclick="onChecked('assists')" id="assists").checkbox assists 
-        b(onclick="onChecked('lastHits')" id="lastHits").checkbox lastHits 
-        b(onclick="onChecked('denies')" id="denies").checkbox denies 
-        b(onclick="onChecked('level')" id="level").checkbox level 
-        b(onclick="onChecked('netWorth')" id="netWorth").checkbox netWorth 
-        b(onclick="onChecked('gold')" id="gold").checkbox gold 
+        #chart(style="width:100%;height:1px" )
+        #table(style="min-width:300px;max-width:800px;overflow-x:hidden;padding: 0 0 0 0;max-height:50%")
+                table(style="background:#111;width:100%;color:#888;")
+                    tbody(id="items")
 
-    #chart(style="width:100%;height:1px" )
-    #table(style="min-width:300px;max-width:800px;overflow-x:hidden;padding: 0 0 0 0;max-height:50%")
-            table(style="background:#111;width:100%;color:#888;")
-                tbody(id="items")
+        div(style="height:50px")      
+    #versuswinrate_page(style="overflow:hidden;height:0")
+                              
+        #versus(style="min-width:300px;max-width:800px;color:#ccc;padding: 0 0 0 0;")     
+            div(style="padding:10") WORST VERSUS         #{hero} win rate                        
+            table(style="background:#111;width:100%;color:#888;margin-left:auto;margin-right:auto")
+                tbody(id="versuses")
 
-    div(style="height:50px")                                
-    #versus(style="min-width:300px;max-width:800px;color:#ccc;padding: 0 0 0 0;")     
-        div(style="padding:10") WORST VERSUS         #{hero} win rate                        
-        table(style="background:#111;width:100%;color:#888;margin-left:auto;margin-right:auto")
-            tbody(id="versuses")
 
+   
 
     script(src="/libs/jquery-3.1.1.min.js")
     script(src="/libs/echarts.js")
@@ -40,7 +45,7 @@ block body
         var xAxisData = [];
         for (var i = 0; i < 10800; i+= 10)
         {
-             xAxisData.push( formatTime(i));
+            xAxisData.push( formatTime(i));
         }
 
         var charts = {};
@@ -139,6 +144,10 @@ block body
 
         function getDetails(item)
         {
+            var sel = document.getElementById(item);
+            if ( sel.style.background != "green")
+                return;
+
             if (charts[item]) 
             {
                 helper.update({name:item, type:'line', smooth:true,  symbol:'none', markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false},data:charts[item]})
@@ -157,27 +166,6 @@ block body
                     
                     data.push([formatTime(d.timestamp), d.win / d.used]);
                 }
-
-
-                //- var size = details.length;
-                //- var range = 3;
-                //- for (var i = range; i < size - range; ++i)
-                //- {
-                //-     if (details[i].used < 10)
-                //-         continue;
-                //-     var win = 0;
-                //-     var used = 0;
-                //-     for (var j = -range; j <= range; ++j)
-                //-     {
-                //-         var d = details[i + j];
-                //-         win += d.win;
-                //-         used += d.used;
-                //-     }
-
-                //-     win = win / (range*2 + 1);
-                //-     used = used / (range*2 + 1);
-                //-     data.push([formatTime(details[i].timestamp),win / used])
-                //- }
 
                 charts[item] = data;
                 getDetails(item)
@@ -200,6 +188,25 @@ block body
             }
             
         }
+        var presubbtn;
+        function onClickSubMenuBtn(btn)
+        {
+            
+            if (presubbtn)
+            {
+                var pre = document.getElementById(presubbtn);
+                pre.setAttribute("class", "submenubtn");
+                var page = document.getElementById(presubbtn + "_page");
+                page.style.height = "0px";
+            }
+            presubbtn = btn;
+
+            var cur = document.getElementById(btn);
+            cur.setAttribute("class", "submenubtndown");
+            var page = document.getElementById(btn + "_page");
+            page.style.height = "";
+        }
+        onClickSubMenuBtn("itemwinrate")
 
         $.get('/api/GetItemSummaries/?hero=#{hero}', function (items) 
         {
@@ -247,5 +254,4 @@ block body
         })
 
         draw();
-  
-  
+

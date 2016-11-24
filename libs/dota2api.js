@@ -80,8 +80,9 @@ function callImpl(method, args, callback)
         }).on("error", function (err)
         {
             logger.log("failed to get response " + url,"error");
-            logger.log(err,"error");
+            //logger.log(err,"error");
             clearTimeout( timeout );
+            callback(data,err)
         })
     })
 
@@ -97,7 +98,7 @@ function callImpl(method, args, callback)
         logger.log("request " + url + " is timeout")
         req.abort();
         callback({},"timeout");
-    },60000)
+    },120000)
     //req.end();
 }
 

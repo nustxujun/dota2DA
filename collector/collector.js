@@ -78,11 +78,11 @@ function collect()
     {
         if (errorlog(err) && data.result)
             push(data);       
-        else// retry again
-            dota2api.GetLiveLeagueGames(function(data,err){
-                if (errorlog(err) && data.result)
-                    push(data); 
-            })
+        // else// retry again
+        //     dota2api.GetLiveLeagueGames(function(data,err){
+        //         if (errorlog(err) && data.result)
+        //             push(data); 
+        //     })
     })
 }
 
@@ -165,6 +165,7 @@ function process(matchid, timestamp)
         return;
 		
 	logger.log("request match " + matchid)	
+    cache.add(matchid)
     dota2api.GetMatchDetails(matchid, function(data,err)
     {
         if (err || data.result.error == "Match ID not found") 

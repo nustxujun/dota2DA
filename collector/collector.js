@@ -279,7 +279,6 @@ exports.start = function ()
     {
         cache.find({timestamp:{$lt:getTime() - 60000 }}, function (err, docs)
         {
-            console.log("find " + docs.length)
             for (var i in docs)
             {
                 if(callback(docs[i].matchid, docs[i].timestamp))

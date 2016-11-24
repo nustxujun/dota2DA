@@ -3,22 +3,22 @@ extends frame
 block submenu
     div(style="height:10px;width:100%")
     #menu(align="middle" style="height:40px;padding: 0 10 0 10;")
-        li(id="itemwinrate" onclick="onClickSubMenuBtn('itemwinrate')").submenubtn items
-        li(id="versuswinrate" onclick="onClickSubMenuBtn('versuswinrate')").submenubtn versus
+        li(id="itemwinrate" ).submenubtn items
+        li(id="versuswinrate" ).submenubtn versus
         
 block body
     #itemwinrate_page(style="overflow:hidden;height:0")
         #baselines(align="middle" style="word-wrap:break-word; line-height:40px; padding: 0 10 0 10;")
-            b(onclick="onChecked('gpm')" id="gpm").checkbox gpm
-            b(onclick="onChecked('xpm')" id="xpm").checkbox xpm 
-            b(onclick="onChecked('kills')" id="kills").checkbox kills 
-            b(onclick="onChecked('deaths')" id="deaths").checkbox deaths 
-            b(onclick="onChecked('assists')" id="assists").checkbox assists 
-            b(onclick="onChecked('lastHits')" id="lastHits").checkbox lastHits 
-            b(onclick="onChecked('denies')" id="denies").checkbox denies 
-            b(onclick="onChecked('level')" id="level").checkbox level 
-            b(onclick="onChecked('netWorth')" id="netWorth").checkbox netWorth 
-            b(onclick="onChecked('gold')" id="gold").checkbox gold 
+            b(id="gpm").checkbox gpm
+            b(id="xpm").checkbox xpm 
+            b(id="kills").checkbox kills 
+            b(id="deaths").checkbox deaths 
+            b(id="assists").checkbox assists 
+            b(id="lastHits").checkbox lastHits 
+            b(id="denies").checkbox denies 
+            b(id="level").checkbox level 
+            b(id="netWorth").checkbox netWorth 
+            b(id="gold").checkbox gold 
 
         #chart(style="width:100%;height:1px" )
         #table(style="min-width:300px;max-width:800px;overflow-x:hidden;padding: 0 0 0 0;max-height:50%")
@@ -34,11 +34,12 @@ block body
                 tbody(id="versuses")
 
 
-   
+block script   
 
     script(src="/libs/jquery-3.1.1.min.js")
-    script(src="/libs/echarts.js")
+    script(src="/libs/echarts.min.js")
     script(src="/libs/echartshelper.js")
+    script(src="/libs/ui.js")
 
 
     script(stype="text/javascript").
@@ -54,39 +55,26 @@ block body
         var helper = echartshelper(myChart);
         var options = helper.getOptions();
         options.xAxis.data = xAxisData;
-        var lastDiv;
         var herodetails;
-        function onChecked(id)
-        {
-            if (lastDiv)
-            {
-                document.getElementById(lastDiv).setAttribute("class", "checkbox")
-                helper.remove(lastDiv)
-                if (lastDiv == id)
-                {
-                    lastDiv = false;
-                    draw();
-                    return;                    
-                }
-                lastDiv = id;
-            }
-            var e = document.getElementById(id);
-            if (e.getAttribute("class") == "checkbox" )
-            {
-                e.setAttribute("class", "checkboxChecked");
-                options.yAxis[1].name = id;
-                lastDiv = id;
-                showdetails(id)
-            }
-            else
-            {
-                e.setAttribute("class", "checkbox");
+
+        var checkboxparas = {
+            reclick :true,
+            autoreset:false,
+            onclick:function(button){
+                button.setAttribute("class", "checkboxChecked");
+                options.yAxis[1].name = button.id;
+                showdetails(button.id)
+            },
+            onreset: function(button){
+                button.setAttribute("class","checkbox");
+                helper.remove(button.id);
                 options.yAxis[1].name = "";
-                helper.remove(id)
+                
                 draw();
+
             }
         }
-
+        
         function showdetails(item)
         {
             if (herodetails)
@@ -102,16 +90,44 @@ block body
             }
             else
             {
-                //showdetails(item);
+                $.get('/api/GetHeroDetails/?name=#{hero}', function (ret) 
+                {
+                    herodetails = ret;
+                    showdetails(item)
+                })    
             }
         }
+        ui.addRadioButton("gpm", "charts", checkboxparas)
+        ui.addRadioButton("xpm", "charts", checkboxparas)
+        ui.addRadioButton("kills", "charts", checkboxparas)
+        ui.addRadioButton("deaths", "charts", checkboxparas)
+        ui.addRadioButton("assists", "charts", checkboxparas)
+        ui.addRadioButton("lastHits", "charts", checkboxparas)
+        ui.addRadioButton("denies", "charts", checkboxparas)
+        ui.addRadioButton("level", "charts", checkboxparas)
+        ui.addRadioButton("netWorth", "charts", checkboxparas)
+        ui.addRadioButton("gold", "charts", checkboxparas)
+        
 
-        $.get('/api/GetHeroDetails/?name=#{hero}', function (ret) 
-        {
-            herodetails = ret;
-            if (lastDiv)
-                showdetails(lastDiv)
-        })     
+        var subbuttonparas = {
+            autoreset:false,
+            reclick:false,
+            onclick:function(button){
+                button.setAttribute("class", "submenubtndown");
+                var page = document.getElementById(button.id + "_page");
+                page.style.height = "";
+            },
+            onreset:function(button){
+                button.setAttribute("class", "submenubtn");
+                var page = document.getElementById(button.id + "_page");
+                page.style.height = "0px";
+            }
+        }
+        ui.addRadioButton("itemwinrate","default", subbuttonparas);
+        ui.addRadioButton("versuswinrate","default", subbuttonparas);
+        itemwinrate.onclick();
+        
+ 
 
         function formatTime(time)
         {
@@ -188,25 +204,9 @@ block body
             }
             
         }
-        var presubbtn;
-        function onClickSubMenuBtn(btn)
-        {
-            
-            if (presubbtn)
-            {
-                var pre = document.getElementById(presubbtn);
-                pre.setAttribute("class", "submenubtn");
-                var page = document.getElementById(presubbtn + "_page");
-                page.style.height = "0px";
-            }
-            presubbtn = btn;
 
-            var cur = document.getElementById(btn);
-            cur.setAttribute("class", "submenubtndown");
-            var page = document.getElementById(btn + "_page");
-            page.style.height = "";
-        }
-        onClickSubMenuBtn("itemwinrate")
+
+
 
         $.get('/api/GetItemSummaries/?hero=#{hero}', function (items) 
         {

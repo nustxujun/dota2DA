@@ -29,7 +29,7 @@ function complete(err)
 		{
 			waiting = false;
 			next("from complete");
-		}, 5)
+		}, 1)
 	}
 }
 
@@ -38,7 +38,7 @@ function next(args)
     if (waiting || tasks.length == 0 )
         return;
 
-    for (var i = 0 ; i < 10; ++i)
+    for (var i = 0 ; i < 2; ++i)
     {
         var task = tasks.shift();
         if (task)

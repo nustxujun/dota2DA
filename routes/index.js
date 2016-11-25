@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var dota2api = require('../libs/dota2api')
+var dota2api = require('../core/dota2api')
 
 /* GET home page. */
 router.get('/', function(req, res, next) {

@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var dota2api = require('../libs/dota2api')
-var datamgr = require("../collector/datamgr.js")
-var logger = require("../libs/logger")
+var dota2api = require('../core/dota2api')
+var datamgr = require("../core/datamgr")
+var logger = require("../core/logger")
 
 var heroes;
 var heroMap = {};

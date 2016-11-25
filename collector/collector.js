@@ -1,8 +1,8 @@
 var schedule = require('node-schedule');
 var http = require('http')
-var datamgr = require("./datamgr.js")
-var dota2api = require("../libs/dota2api")
-var logger = require("../libs/logger")
+var datamgr = require("../core/datamgr")
+var dota2api = require("../core/dota2api")
+var logger = require("../core/logger")
 var serialtask = require("./serialtask");
 
 var interval = 10;

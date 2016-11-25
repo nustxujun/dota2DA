@@ -1,4 +1,4 @@
-var logger = require("../libs/logger")
+var logger = require("./logger")
 
 var itemdetailsSchema = {itemid:Number, heroid:Number, timestamp: Number, used: Number, win:Number}
 var itemdetailsIndex = {itemid:1, heroid:1, timestamp:1}
@@ -56,7 +56,7 @@ function onEvent(event, err)
 
 exports.init = function()
 {
-    var database = require("../libs/database")
+    var database = require("./database")
     database.connect("mongodb://localhost/test",onEvent);
 }
 
@@ -66,7 +66,7 @@ function getCollection(name, schema, index)
     if (collections[name])
         return collections[name];
 
-    var database = require("../libs/database")
+    var database = require("./database")
     var col = database.createCollection(name, schema, index);
     collections[name] = col;
     return col; 

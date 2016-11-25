@@ -9,6 +9,7 @@ block submenu
 block body
     #itemwinrate_page(style="overflow:hidden;height:0")
         #baselines(align="middle" style="word-wrap:break-word; line-height:40px; padding: 0 10 0 10;")
+            b(id="win").checkbox winRate
             b(id="gpm").checkbox gpm
             b(id="xpm").checkbox xpm 
             b(id="kills").checkbox kills 
@@ -35,7 +36,7 @@ block body
 
 
 block script   
-
+   
     script(src="/libs/jquery-3.1.1.min.js")
     script(src="/libs/echarts.min.js")
     script(src="/libs/echartshelper.js")
@@ -74,7 +75,7 @@ block script
 
             }
         }
-        
+
         function showdetails(item)
         {
             if (herodetails)
@@ -90,13 +91,15 @@ block script
             }
             else
             {
-                $.get('/api/GetHeroDetails/?name=#{hero}', function (ret) 
-                {
-                    herodetails = ret;
+        $.get('/api/GetHeroDetails/?name=#{hero}', function (ret) 
+        {
+            herodetails = ret;
                     showdetails(item)
-                })    
+        })     
             }
         }
+
+        ui.addRadioButton("win", "charts", checkboxparas)
         ui.addRadioButton("gpm", "charts", checkboxparas)
         ui.addRadioButton("xpm", "charts", checkboxparas)
         ui.addRadioButton("kills", "charts", checkboxparas)
@@ -107,7 +110,7 @@ block script
         ui.addRadioButton("level", "charts", checkboxparas)
         ui.addRadioButton("netWorth", "charts", checkboxparas)
         ui.addRadioButton("gold", "charts", checkboxparas)
-        
+
 
         var subbuttonparas = {
             autoreset:false,
@@ -204,7 +207,7 @@ block script
             }
             
         }
-
+            
 
 
 

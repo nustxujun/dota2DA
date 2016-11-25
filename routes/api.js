@@ -10,21 +10,39 @@ var heroNameMap = {};
 var items;
 var itemMap = {};
 var itemNameMap = {};
+var mems = [
+    "play",
+    "win",
+    "gpm",
+    "xpm",
+    "kills",
+    "deaths",
+    "assists",
+    "lastHits",
+    "denies",
+    "heroDamage",
+    "towerDamage",
+    "goldSpent",
+    "timestamp",
+    "used",
+    "netWorth",
+    "level",
+    "matchid",
+    "details",
+    "gold",
+    "duration"
+]
 
-function processResult(data, single)
-{
-    if (!single)
-    {
+function processResult(data, single) {
+    if (!single) {
         var ret = [];
-        for(var i in data)
-        {
+        for (var i in data) {
             var item = data[i]
             ret.push(processResult(item, true));
         }
         return ret;
     }
-    else
-    {
+    else {
         var ret = {};
         if (data.heroid)
             ret.hero = heroNameMap[data.heroid];
@@ -32,9 +50,7 @@ function processResult(data, single)
         if (data.itemid)
             ret.item = itemNameMap[data.itemid];
 
-        var mems = ["play", "win", "gpm","xpm","kills","deaths","assists","lastHits", "denies", "heroDamage","towerDamage","goldSpent", "timestamp","used","netWorth","level","matchid","details","gold"]
-        for (var i in mems)
-        {
+        for (var i in mems) {
             var index = mems[i]
             ret[index] = data[index]
         }
@@ -42,25 +58,21 @@ function processResult(data, single)
     }
 }
 
-dota2api.GetHeroes(function (data)
-{
+dota2api.GetHeroes(function (data) {
     heroes = data.result.heroes;
-    for (var i in heroes)
-    {
+    for (var i in heroes) {
         var h = heroes[i];
         var name = h.name.match(/npc_dota_hero_(.*)/)[1];
         heroMap[name] = h.id;
-        heroNameMap[h.id]= name;
+        heroNameMap[h.id] = name;
     }
 
     logger.log("load hero list completed.")
 })
 
-dota2api.GetGameItems(function (data)
-{
+dota2api.GetGameItems(function (data) {
     items = data.result.items;
-    for (var i in items)
-    {
+    for (var i in items) {
         var h = items[i];
         var name = h.name.match(/item_(.*)/)[1];
         itemMap[name] = h.id;
@@ -71,70 +83,61 @@ dota2api.GetGameItems(function (data)
     logger.log("load item list completed.")
 })
 
-router.get("/GetHeroes", function(req, res, next) {
+router.get("/GetHeroes", function (req, res, next) {
     res.send(heroes);
 });
 
-router.get("/GetItems", function(req, res, next) {
+router.get("/GetItems", function (req, res, next) {
     res.send(items);
 });
 
-router.get("/GetItemSummaries", function(req, res, next) {
+router.get("/GetItemSummaries", function (req, res, next) {
     var itemsummaries = datamgr.getItemSummaries();
     var condition = {};
     if (req.query.item)
         condition.itemid = itemMap[req.query.item];
     if (req.query.hero)
         condition.heroid = heroMap[req.query.hero];
-    itemsummaries.find(condition, null, {sort:{used: -1}},function (err, docs)
-    {
-        if (err)
-        {
+    itemsummaries.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
+        if (err) {
             logger.log(err, "error")
         }
-        else
-        {
-            res.send( processResult(docs));
+        else {
+            res.send(processResult(docs));
         }
     })
 });
 
-router.get("/GetHeroSummaries", function(req, res, next) {
+router.get("/GetHeroSummaries", function (req, res, next) {
     var herosummaries = datamgr.getHeroSummaries();
     var condition = {};
     condition.heroid = heroMap[req.query.name];
-    herosummaries.findOne(condition,function (err, doc)
-    {
-        if (err)
-        {
+    herosummaries.findOne(condition, function (err, doc) {
+        if (err) {
             logger.log(err, "error")
         }
-        else
-        {
+        else {
             if (doc)
                 res.send(processResult(doc, true));
         }
     })
 });
 
-router.get("/GetHeroDetails", function(req, res, next) {
+router.get("/GetHeroDetails", function (req, res, next) {
     var herodetails = datamgr.getHeroDetails();
-    
-    herodetails.find({heroid: heroMap[req.query.name]},function (err, docs)
-    {
+
+    herodetails.find({ heroid: heroMap[req.query.name] }, function (err, docs) {
         if (err)
             logger.log(err, "error")
-        else
-        {
+        else {
             res.send(processResult(docs))
         }
     })
 });
 
-router.get("/GetItemDetails", function(req, res, next) {
+router.get("/GetItemDetails", function (req, res, next) {
 
-    if (!req.query.item || !req.query.hero )
-    {
+    if (!req.query.item || !req.query.hero) {
         res.send("args err");
         return;
     }
@@ -145,33 +148,28 @@ router.get("/GetItemDetails", function(req, res, next) {
         condition.itemid = itemMap[req.query.item];
     if (req.query.hero)
         condition.heroid = heroMap[req.query.hero];
-    itemdetails.find(condition,null, {sort:{timestamp:1}},function (err, docs)
-    {
+    itemdetails.find(condition, null, { sort: { timestamp: 1 } }, function (err, docs) {
         if (err)
             logger.log(err, "error")
-        else
-        {
+        else {
             res.send(processResult(docs));
         }
     })
 });
 
-router.get("/GetItemVersuses", function(req, res, next) {
+router.get("/GetItemVersuses", function (req, res, next) {
     var itemversuses = datamgr.getItemVersuses();
     var condition = {};
     if (req.query.item)
         condition.itemid = itemMap[req.query.item];
     if (req.query.hero)
         condition.heroid = heroMap[req.query.hero];
-    itemversuses.find(condition, null, {sort:{used: -1}},function (err, docs)
-    {
-        if (err)
-        {
+    itemversuses.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
+        if (err) {
             logger.log(err, "error")
         }
-        else
-        {
-            res.send( processResult(docs));
+        else {
+            res.send(processResult(docs));
         }
     })
 });

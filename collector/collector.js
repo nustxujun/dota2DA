@@ -137,6 +137,7 @@ function record(players, timestamp, winner, matchid, summaries, versuses)
             gold:p.gold,
             netWorth:p.net_worth,
             level: p.level,
+            win:winner,
         }
         update(herodetails,{heroid:p.hero_id, timestamp:timestamp}, {$inc:inc},{upsert:true});
     }
@@ -211,7 +212,7 @@ function process(matchid, timestamp)
                 towerDamage: p.tower_damage,
                 goldSpent:p.gold_spent,
                 play:1,
-                win: ((i < 5) == radiantWin)
+                win: ((i < 5) == radiantWin),
             }
             update(herosummaries,{heroid: p.hero_id}, {$inc:inc}, {upsert:true})
         }

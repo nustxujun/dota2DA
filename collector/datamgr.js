@@ -28,6 +28,7 @@ var herodetailsSchema =
     heroid:Number,
     timestamp:Number,
     play:Number,
+    win:Number,
     gpm:Number, 
     xpm:Number, 
     kills:Number, 

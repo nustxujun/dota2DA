@@ -39,8 +39,10 @@ function errorlog(err)
         return true; 
 };
 
+var count = 0;
 function update(collection, condition,doc, option)
 {
+    count++;
     serialtask.add(function (callback)
     {
         collection.update(condition, doc, option,callback);
@@ -222,6 +224,8 @@ function process(matchid, timestamp)
             if (!errorlog(err) || docs.length == 0)
                 return;
 
+            count = 0;
+            
             var summaries = new Map()
             var versuses = {radiant:{}, dire:{}};
             for (var d in docs)
@@ -242,6 +246,9 @@ function process(matchid, timestamp)
             {
                 update(itemsummaries,{itemid:item.item, heroid:item.hero},{$inc:{used:1, win: item.win}}, {upsert:true})
             })
+
+            logger.log("data inserted in database: " + count);
+            
         })
 
     });

@@ -1,5 +1,4 @@
 var log4js = require('log4js')
-
 log4js.configure({
   appenders: [
     { 
@@ -18,7 +17,7 @@ var log = log4js.getLogger('log');
 
 exports.log = function(msg, level)
 {
-    if (!level)
+    if (!level || !log[level])
         level = "info"
     log[level](msg);
 }

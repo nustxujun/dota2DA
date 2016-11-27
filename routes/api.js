@@ -3,6 +3,8 @@ var router = express.Router();
 var dota2api = require('../core/dota2api')
 var datamgr = require("../core/datamgr")
 var logger = require("../core/logger")
+var http = require('http')
+var profile = require("../profile")
 
 var heroes;
 var heroMap = {};
@@ -30,7 +32,7 @@ var mems = [
     "matchid",
     "details",
     "gold",
-    "duration"
+    "duration",
 ]
 
 function processResult(data, single) {
@@ -49,6 +51,9 @@ function processResult(data, single) {
 
         if (data.itemid)
             ret.item = itemNameMap[data.itemid];
+
+        if (data.opponent)
+            ret.opponent = heroNameMap[data.opponent]
 
         for (var i in mems) {
             var index = mems[i]
@@ -91,90 +96,124 @@ router.get("/GetItems", function (req, res, next) {
     res.send(items);
 });
 
-router.get("/GetItemSummaries", function (req, res, next) {
-    var itemsummaries = datamgr.getItemSummaries();
-    var condition = {};
-    if (req.query.item)
-        condition.itemid = itemMap[req.query.item];
-    if (req.query.hero)
-        condition.heroid = heroMap[req.query.hero];
-    itemsummaries.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
-        if (err) {
-            logger.log(err, "error")
+if (profile.debug)
+{
+    router.get(/.*/, function (req, res, next) {
+        console.log("http://115.159.102.31:8080" + req.originalUrl);
+        var request = http.get("http://115.159.102.31:8080" + req.originalUrl, function (response)
+        {
+            var data = "";
+            response.on("data", function (chunk)
+            {
+                data +=chunk;
+            }).on("end", function()
+            {
+                res.send(JSON.parse(data));
+            })
+        })        
+    });
+}
+else
+{
+
+    router.get("/GetItemSummaries", function (req, res, next) {
+        var itemsummaries = datamgr.getItemSummaries();
+        var condition = {};
+        if (req.query.item)
+            condition.itemid = itemMap[req.query.item];
+        if (req.query.hero)
+            condition.heroid = heroMap[req.query.hero];
+        itemsummaries.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
+            if (err) {
+                logger.log(err, "error")
+            }
+            else {
+                res.send(processResult(docs));
+            }
+        })
+    });
+
+    router.get("/GetHeroSummaries", function (req, res, next) {
+        var herosummaries = datamgr.getHeroSummaries();
+        var condition = {};
+        condition.heroid = heroMap[req.query.name];
+        herosummaries.findOne(condition, function (err, doc) {
+            if (err) {
+                logger.log(err, "error")
+            }
+            else {
+                if (doc)
+                    res.send(processResult(doc, true));
+            }
+        })
+    });
+
+    router.get("/GetHeroDetails", function (req, res, next) {
+        var herodetails = datamgr.getHeroDetails();
+
+        herodetails.find({ heroid: heroMap[req.query.name] }, function (err, docs) {
+            if (err)
+                logger.log(err, "error")
+            else {
+                res.send(processResult(docs))
+            }
+        })
+    });
+
+    router.get("/GetItemDetails", function (req, res, next) {
+
+        if (!req.query.item || !req.query.hero) {
+            res.send("args err");
+            return;
         }
-        else {
-            res.send(processResult(docs));
-        }
-    })
-});
 
-router.get("/GetHeroSummaries", function (req, res, next) {
-    var herosummaries = datamgr.getHeroSummaries();
-    var condition = {};
-    condition.heroid = heroMap[req.query.name];
-    herosummaries.findOne(condition, function (err, doc) {
-        if (err) {
-            logger.log(err, "error")
-        }
-        else {
-            if (doc)
-                res.send(processResult(doc, true));
-        }
-    })
-});
+        var itemdetails = datamgr.getItemDetails();
+        var condition = {};
+        if (req.query.item)
+            condition.itemid = itemMap[req.query.item];
+        if (req.query.hero)
+            condition.heroid = heroMap[req.query.hero];
+        itemdetails.find(condition, null, { sort: { timestamp: 1 } }, function (err, docs) {
+            if (err)
+                logger.log(err, "error")
+            else {
+                res.send(processResult(docs));
+            }
+        })
+    });
 
-router.get("/GetHeroDetails", function (req, res, next) {
-    var herodetails = datamgr.getHeroDetails();
-
-    herodetails.find({ heroid: heroMap[req.query.name] }, function (err, docs) {
-        if (err)
-            logger.log(err, "error")
-        else {
-            res.send(processResult(docs))
-        }
-    })
-});
-
-router.get("/GetItemDetails", function (req, res, next) {
-
-    if (!req.query.item || !req.query.hero) {
-        res.send("args err");
-        return;
-    }
-
-    var itemdetails = datamgr.getItemDetails();
-    var condition = {};
-    if (req.query.item)
-        condition.itemid = itemMap[req.query.item];
-    if (req.query.hero)
-        condition.heroid = heroMap[req.query.hero];
-    itemdetails.find(condition, null, { sort: { timestamp: 1 } }, function (err, docs) {
-        if (err)
-            logger.log(err, "error")
-        else {
-            res.send(processResult(docs));
-        }
-    })
-});
-
-router.get("/GetItemVersuses", function (req, res, next) {
-    var itemversuses = datamgr.getItemVersuses();
-    var condition = {};
-    if (req.query.item)
-        condition.itemid = itemMap[req.query.item];
-    if (req.query.hero)
-        condition.heroid = heroMap[req.query.hero];
-    itemversuses.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
-        if (err) {
-            logger.log(err, "error")
-        }
-        else {
-            res.send(processResult(docs));
-        }
-    })
-});
+    router.get("/GetItemVersuses", function (req, res, next) {
+        var itemversuses = datamgr.getItemVersuses();
+        var condition = {};
+        if (req.query.item)
+            condition.itemid = itemMap[req.query.item];
+        if (req.query.hero)
+            condition.heroid = heroMap[req.query.hero];
+        itemversuses.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
+            if (err) {
+                logger.log(err, "error")
+            }
+            else {
+                res.send(processResult(docs));
+            }
+        })
+    });
 
 
-
+    router.get("/GetHeroVersuses", function (req, res, next) {
+        var heroversuses = datamgr.getHeroVersuses();
+        var condition = {};
+        if (req.query.hero)
+            condition.heroid = heroMap[req.query.hero];
+        heroversuses.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
+            if (err) {
+                logger.log(err, "error")
+            }
+            else {
+                res.send(processResult(docs));
+            }
+        })
+    });
+}
 
 module.exports = router;

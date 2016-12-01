@@ -102,13 +102,13 @@ function checkPlayer(players)
     return true;
 }
 
-
-
 function record(players, timestamp, winner, matchid, summaries, versuses)
 {
     for (var i = 0; i < 5; ++i)
     {
         var p = players[i];
+        if (p.hero_id == 0)
+            continue;
         versuses[p.hero_id] = {};
         var v = versuses[p.hero_id];
         for (var j = 0; j < 6; ++j)
@@ -149,10 +149,14 @@ function recordVersus(players, win, versuses)
 {
     for (var opponent in versuses)
     {
+        if (opponent == 0)
+            continue;
         var items = versuses[opponent];
         for (var i = 0; i < 5; ++i)
         {
             var p = players[i];
+            if (p.hero_id == 0)
+                continue;
             for (var item in items)
                 update(itemversuses,{heroid:p.hero_id, itemid: item, opponent:opponent}, {$inc:{win:win, used:1}},{upsert: true})
             

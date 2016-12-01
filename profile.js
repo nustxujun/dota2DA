@@ -17,7 +17,9 @@ module.exports = (function()
     }
     catch(e)
     {
-        logger.log("config.json is not existed.","warn")
+        logger.log(e,"error")
+        logger.log("cannot read config.json.","warn")
+
         return {};
     }
 })()

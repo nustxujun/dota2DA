@@ -297,17 +297,28 @@ exports.start = function ()
 
 
 
-    var seconds = [];
-    for (var i = 0; i < 60 ; i += interval)
-        seconds.push(i);
+    // var seconds = [];
+    // for (var i = 0; i < 60 ; i += interval)
+    //     seconds.push(i);
 
-    var rule = new schedule.RecurrenceRule();
-    rule.second = seconds;
-    var timer = schedule.scheduleJob(rule, function()
+    // var rule = new schedule.RecurrenceRule();
+    // rule.second = seconds;
+    // var timer = schedule.scheduleJob(rule, function()
+    // {
+    //     collect();
+    //     cache.forEach(process)
+    // });
+
+
+    function framemove()
     {
-        collect();
-        cache.forEach(process)
-    });
+        setTimeout(function()
+        {
+            collect();
+            cache.forEach(process);
+            framemove();
+        }, 10000)
+    }
 
-
+    framemove();
 }

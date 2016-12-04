@@ -189,6 +189,8 @@ else
             condition.itemid = itemMap[req.query.item];
         if (req.query.hero)
             condition.heroid = heroMap[req.query.hero];
+        if (req.query.opponent)
+            condition.opponent = heroMap[req.query.opponent];
         itemversuses.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
             if (err) {
                 logger.log(err, "error")

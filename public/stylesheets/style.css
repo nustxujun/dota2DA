@@ -14,7 +14,7 @@ a {
 }
 
 
-#bodymain div{
+#bodymain {
   max-width: 1040;
   margin-left: auto;
   margin-right: auto;
@@ -29,10 +29,10 @@ a {
     line-height: 50px;
     float: left;
     list-style: none;
-    background:#111;
 }   
 .lableLink{
-    color:#888;
+    color:#ccc;
+    text-shadow:1px 1px 1px #000; 
 }
 .checkbox{
   color:#888;
@@ -70,13 +70,14 @@ a {
 .submenubtn{
   border: 1px solid #111;
   
-  color:#888;
+  color:#ccc;
+  text-shadow:1px 1px 1px #000; 
   background-image:  -webkit-linear-gradient(top, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
   height:30px;
   line-height: 30px;
   float:left;
   padding: 0 10 0 10;
-  margin: 0 -1 0 0;
+  margin: 10 -1 0 0;
 
   text-align: center;
   cursor:pointer;
@@ -88,7 +89,6 @@ a {
   -ms-user-select:none;
   user-select:none;
   list-style: none;
-  
 }
 
 .submenubtndown{
@@ -100,7 +100,7 @@ a {
   line-height: 30px;
   float:left;
   padding: 0 10 0 10;
-  margin: 0 -1 0 0;
+  margin: 10 -1 0 0;
 
   text-align: center;
   cursor:pointer;
@@ -112,4 +112,27 @@ a {
   -ms-user-select:none;
   user-select:none;
   list-style: none;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}/* 滚动槽 */
+
+::-webkit-scrollbar-track {
+  border-radius: 5px;
+}/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {    
+  border-radius: 5px;    
+  background: #333;    
+}
+::-webkit-scrollbar-thumb:window-inactive {    
+  border-radius: 5px;    
+  background: #333;  
+}
+::-webkit-scrollbar-corner{
+  background: #222;
+}
+
+td{
+  padding:0
 }

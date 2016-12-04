@@ -107,7 +107,7 @@ function record(players, timestamp, winner, matchid, summaries, versuses)
     for (var i = 0; i < 5; ++i)
     {
         var p = players[i];
-        if (p.hero_id == 0)
+        if (!p || p.hero_id == 0)
             continue;
         versuses[p.hero_id] = {};
         var v = versuses[p.hero_id];

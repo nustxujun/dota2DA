@@ -13,9 +13,9 @@ var echartshelper = function (chart, option)
 
             },
             grid: {
-                left: '0',
+                left: '20',
                 right: '30',
-                bottom: '20',
+                bottom: '30',
                 containLabel: true
             },
             xAxis: {
@@ -25,7 +25,7 @@ var echartshelper = function (chart, option)
                 data: [],
                 axisLine:{
                     lineStyle:{
-                        color: '#aaa'
+                        color: '#aaa',
                     }
                 },
             },
@@ -39,12 +39,12 @@ var echartshelper = function (chart, option)
                 splitLine: {
                     show: true,
                     lineStyle:{
-                        color:'#444'
+                        color:'#444',
                     }                        
                 },
                 axisLine:{
                     lineStyle:{
-                        color: '#aaa'
+                        color: '#aaa',
                     }
                 },
                 splitArea:{
@@ -59,7 +59,7 @@ var echartshelper = function (chart, option)
                 splitLine:{show:false},
                 axisLine:{
                     lineStyle:{
-                        color: '#444'
+                        color: '#444',
                     }
                 },
             }],

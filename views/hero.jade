@@ -252,7 +252,7 @@ block script
                     continue
                 var selected = "<td style='width:20px'><div style='width:20px;height:40px' id ='" + item.item + "' /></td>";
                 var image = "<td style='width:80px'><img style='height:40px;vertical-align:middle;' src='http://cdn.dota2.com/apps/dota2/images/items/" + item.item + "_lg.png' class='normalImage'/></td>";
-                var rate = "<td onclick='selectItem(\""+item.item+"\")'><div onclick='selectItem(\""+item.item+"\")' style='background:green;margin-left:0px;color:white;width:" + Math.floor(item.win * 100 /item.used ) + "%'><p onclick='selectItem(\""+item.item+"\")' style='margin-left:10px'>" + Math.floor(item.win * 100 /item.used)+"%</p></div></td>";
+                var rate = "<td style='cursor:pointer;' onclick='selectItem(\""+item.item+"\")'><div onclick='selectItem(\""+item.item+"\")' style='background:green;margin-left:0px;color:white;width:" + Math.floor(item.win * 100 /item.used ) + "%'><p onclick='selectItem(\""+item.item+"\")' style='margin-left:10px'>" + Math.floor(item.win * 100 /item.used)+"%</p></div></td>";
                 var tr = "<tr >" + selected + image+ rate + "</tr>"
                 content += tr;
             }
@@ -280,7 +280,7 @@ block script
 
             var progress = '<div style="background:green;width:100%"><p style="margin:10px;color:white"/>'+ rate +'%</div>'
             if (cb)
-                progress = '<td onclick="'+ cb +'('+ name +')"><div style="height:40px;float:left;width:' + rate+ '%">' + progress + '</div></td>';
+                progress = '<td style="cursor:pointer;" onclick="'+ cb +'('+ name +')"><div style="height:40px;float:left;width:' + rate+ '%">' + progress + '</div></td>';
             else
                 progress = '<td><div style="height:40px;float:left;width:' + rate+ '%">' + progress + '</div></td>';
                 

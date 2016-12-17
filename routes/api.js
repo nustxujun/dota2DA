@@ -138,13 +138,13 @@ else
         var condition = {};
         if (req.query.name)
             condition.heroid = heroMap[req.query.name];
-        herosummaries.find(condition,null, {sort:{play:-1}}, function (err, doc) {
+        herosummaries.find(condition,null, {sort:{play:-1}}, function (err, docs) {
             if (err) {
                 logger.log(err, "error")
             }
             else {
-                if (doc)
-                    res.send(processResult(doc, true));
+                if (docs)
+                    res.send(processResult(docs));
             }
         })
     });

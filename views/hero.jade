@@ -262,7 +262,9 @@ block script
 
         $.get('/api/GetHeroSummaries/?name=#{hero}', function (ret) 
         {
-            var rate = ret.win / ret.play;
+            if (!ret[0] ) 
+                return;
+            var rate = ret[0].win / ret[0].play;
             helper.update({name:"#{hero}", type:'line', smooth:true,  symbol:'none', data:[rate],markLine:{data : [{type : 'average', name: '平均值'}], symbol:'none', silent: true, animation: false}})
             draw();
         })       

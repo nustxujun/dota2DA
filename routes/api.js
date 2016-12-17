@@ -136,8 +136,9 @@ else
     router.get("/GetHeroSummaries", function (req, res, next) {
         var herosummaries = datamgr.getHeroSummaries();
         var condition = {};
-        condition.heroid = heroMap[req.query.name];
-        herosummaries.findOne(condition, function (err, doc) {
+        if (req.query.name)
+            condition.heroid = heroMap[req.query.name];
+        herosummaries.find(condition,null, {sort:{play:-1}}, function (err, doc) {
             if (err) {
                 logger.log(err, "error")
             }

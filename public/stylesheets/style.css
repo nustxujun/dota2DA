@@ -136,3 +136,10 @@ a {
 td{
   padding:0
 }
+
+.title1 {
+  color:#ddd;
+  text-shadow:1px 1px 1px #000; 
+  height: 30px;
+  line-height: 30px;
+}

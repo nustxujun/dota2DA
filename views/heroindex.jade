@@ -1,32 +1,121 @@
 extends frame
 
 block body
-  #main(align="middle" style="padding-left:auto;padding-right:auto;")
+        
+    div(style="margin-left:20px;margin-top:20px" ).title1 热门
+    #hot
+    div(style="margin-left:20px;margin-top:20px").title1 推荐
+    #top
+    div(style="margin-left:20px;margin-top:20px").title1 总览
+    #main
     script(src="libs/jquery-3.1.1.min.js")
     script(type="text/javascript").
-        var heroes ;
-        $.get('/api/GetHeroes', function (ret) 
+        var heroesmap ={} ;
+        var playtops = [];
+        var wintops = [];
+        $.get('/api/GetHeroSummaries/?name=#{hero}', function (heroes) 
         {
-            heroes = ret;
+            var count = Math.min(heroes.length, 50);
+            for (var i = 0; i < heroes.length; ++i)
+            {
+                if(i < count)
+                {
+                    playtops.push(heroes[i]);
+                    wintops.push(heroes[i]);
+                }
+
+                heroesmap[heroes[i].hero] = heroes[i]
+            }
+
+            wintops.sort(function(a,b)
+            {
+                return (b.win / b.play) - (a.win / a.play) ;
+            });
             draw();
         })
 
 
         function draw()
         {
-            var div = document.getElementById('main');
+
+
+            var div =  document.getElementById('main');
             var width = div.clientWidth * 0.125;
             width = width > 127? 127: width
             var height = width * 71 / 127;
 
-            var content = "";
-            for (var index in heroes)
+            function getImg(hero, piconly)
             {
-              var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
-              content += "<a href='hero/" + name + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + name + "_hphover.png' class='normalImage'/></a>";
-              
+
+                if (piconly)
+                {
+                    var name = hero
+                    hero = {}
+                    hero.hero = name;
+                    hero.win = 0;
+                    hero.play = 1;
+                }
+                var rate = hero.win * 100 / hero.play * 0.5;
+                var playrate = hero.play *100 / maxplay * 0.5;
+                var winrate = '<div style="background:#282;display:inline-block;height:100%;width:'+ rate +'%" ></div>' + '<div style="background:#fff;display:inline-block;height:100%;width:'+ Math.max(25 - rate,0) +'%" ></div>' 
+                var play = '<div style="display:inline-block;height:100%;width:'+ (50 - playrate) +'%" ></div>' + '<div style="background:#dd2;display:inline-block;height:100%;width:'+(playrate)+'%" ></div>';
+                var image = "<a href='hero/" + hero.hero + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.hero + "_hphover.png' class='normalImage'/></a>";
+
+                var ret = '<div style="display: inline-block;height:' + (height *(1 + heightrate)) + 'px;width:'+ width + 'px; overflow:hidden;background:#111">' + image + '<div style="display:block;min-height:200px;height:'+ (height*heightrate) +'px;width:100%;">'  + play + winrate +'</div>' +'</div>';
+                return ret;
+            }
+
+            var content = "";
+            //- for (var index in heroes)
+            //- {
+            //-   var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
+            //-   content += getImg(name)
+            //- }
+            //- div.innerHTML = content; 
+
+            content = "";
+            div = document.getElementById('hot');
+            var heightrate = 0.1;
+            if (heightrate * height < 5) 
+                heightrate = 5 / height;
+            if (playtops.length == 0) 
+                return;
+
+            var maxplay = playtops[0].play;
+            for (var i in playtops)
+            {
+                if (i > 31)
+                    break;
+                    
+                var hero = playtops[i];
+                content += getImg(hero)
             }
             div.innerHTML = content; 
+
+
+            content = "";
+            div = document.getElementById('top');
+            for (var i in wintops)
+            {
+                if (i > 31)
+                    break;                
+                var hero = wintops[i];
+                content += getImg(hero)
+            }
+            div.innerHTML = content; 
+            
+            content = "";
+            $.get('/api/GetHeroes', function (ret) 
+            {
+                heroes = ret;
+                div =  document.getElementById('main');
+                for (var index in heroes)
+                {
+                  var name = heroes[index].name.match(/npc_dota_hero_(.*)/)[1];
+                  content += getImg(heroesmap[name] || name, heroesmap[name] == undefined)
+                }
+                div.innerHTML = content; 
+            })
         }
         
         window.onresize =function(){ draw();}  

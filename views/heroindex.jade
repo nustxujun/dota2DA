@@ -13,7 +13,7 @@ block body
         var heroesmap ={} ;
         var playtops = [];
         var wintops = [];
-        $.get('/api/GetHeroSummaries/?name=#{hero}', function (heroes) 
+        $.get('/api/GetHeroSummaries/', function (heroes) 
         {
             var count = Math.min(heroes.length, 50);
             for (var i = 0; i < heroes.length; ++i)

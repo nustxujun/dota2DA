@@ -49,7 +49,8 @@ var itemversussummariesSchema = {opponentitemid:Number, heroid:Number, used:Numb
 var itemversussummariesIndex = {opponentitemid:1, heroid:1};
 var heroversusesSchema = {heroid:Number, opponent:Number, play:Number, win:Number};
 var heroversusesIndex = {heroid:1, opponent:1};
-
+var heropartnersSchema = {heroid:Number, partner:Number, play:Number, win:Number}
+var heropartnersIndex = {heroid:1, partner:1};
 
 function onEvent(event, err)
 {}
@@ -115,4 +116,9 @@ exports.getHeroVersuses = function()
 exports.getItemVersusSummaries = function()
 {
     return getCollection("itemversussummaries", itemversussummariesSchema, itemversussummariesIndex);
+}
+
+exports.getHeroPartners = function()
+{
+    return getCollection("heropartners",heropartnersSchema, heropartnersIndex);
 }

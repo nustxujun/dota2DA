@@ -16,6 +16,7 @@ var herodetails;
 var itemversuses;
 var itemversussummaries;
 var heroversuses;
+var heropartners;
 
 function getTime()
 {
@@ -166,6 +167,24 @@ function recordVersus(players, win, versuses)
     }
 }
 
+function recordPartners(players, win)
+{
+    for (var i = 0; i < 5; ++i)
+    {
+        var p = players[i];
+        if (p.hero_id == 0)
+            continue;
+        for (var j = 0; j < 5; ++j)
+        {
+            var p2 = player[j];
+            if (i == j || p.hero_id == 0)
+                continue;
+
+            update(heropartners, {heroid:p.hero_id, partner:p2.hero_id}, {$inc:{play:1, win: win}}, {upsert:true})
+        }
+    }
+}
+
 function process(matchid, timestamp)
 {
     if (serialtask.size() > 10 ) 
@@ -245,6 +264,8 @@ function process(matchid, timestamp)
             recordVersus(score.radiant.players,radiantWin,versuses.dire);
             recordVersus(score.dire.players,!radiantWin,versuses.radiant);
             
+            recordPartners(score.radiant.players,radiantWin);
+            recordPartners(score.dire.players,!radiantWin);
 
             summaries.forEach(function (item, key)
             {
@@ -270,7 +291,8 @@ exports.start = function ()
     itemversuses = datamgr.getItemVersuses();
     itemversussummaries = datamgr.getItemVersusSummaries();
     heroversuses = datamgr.getHeroVersuses();
-
+    heropartners = datamgr.getHeroPartners();
+    
     cache = datamgr.getCaches();
     cache.add = function (id)
     {

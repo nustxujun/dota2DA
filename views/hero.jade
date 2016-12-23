@@ -5,6 +5,8 @@ block submenu
     #menu(style="text-align: center;height:50px;line-height:50px;padding: 0 10 0 10;")
         li(id="itemwinrate" ).submenubtn 物品
         li(id="versuswinrate" ).submenubtn 对手
+        li(id="partnerwinrate" ).submenubtn 队友
+        
         a(href="" style="").lableLink 
         img( src='http://cdn.dota2.com/apps/dota2/images/heroes/#{hero}_hphover.png' style="float: right;height:45px;padding:0;box-shadow:0 0 1px 1px #000;" ).lable
         
@@ -42,7 +44,13 @@ block body
                 text(style="margin-left:20px") 英雄
                 text(style="margin-left:80px") #{hero} 胜率          
             table(style="background:#333;width:99%;;overflow:auto;margin:auto" id="versuses")
-
+    #partnerwinrate_page(style="overflow:hidden;height:0")
+        div(style="background:#111;box-shadow:0 0 1px 1px #000; margin-left:2px; margin: 2px")
+            div(style="width:100%; color:#888;height:30px;line-height:30px")
+                text(style="margin-left:20px") 英雄
+                text(style="margin-left:80px") #{hero} 胜率          
+            table(style="background:#333;width:99%;;overflow:auto;margin:auto" id="partners")        
+    
 
                     
           
@@ -160,6 +168,7 @@ block script
         }
         ui.addRadioButton("itemwinrate","default", subbuttonparas);
         ui.addRadioButton("versuswinrate","default", subbuttonparas);
+        ui.addRadioButton("partnerwinrate", "default", subbuttonparas);
         itemwinrate.onclick();
         
  
@@ -330,6 +339,8 @@ block script
             for (var index in heros)
             {
                 var hero = heros[index];
+                if (hero.play < 20)
+                    continue;
                 var main = '<table style="width:100%;"><tr>' + addItem("hero", hero.opponent, Math.floor(hero.win * 100 / hero.play),"fold")  + '</tr></table>';
                 var header = '<table style="width:100%;color:#888"><tr><td style="width:20%">对手物品</td><td style="width:30%">自己胜率</td><td style="width:20%">自己物品</td><td style="width:30%">自己胜率</td></tr></table>' ;
                 //var sub = '<table style="width:100%;background:#444" id="'+  hero.opponent +'_table"></table>';
@@ -343,6 +354,20 @@ block script
             //-     console.log(hero)
             }
             document.getElementById("versuses").innerHTML = content; 
+        })
+
+        $.get('/api/GetHeroPartners/?hero=#{hero}', function(heroes)
+        {
+            var content = ""
+            for (var index in heroes)
+            {
+                var hero = heroes[index];
+                if (hero.play < 20)
+                    continue;
+                content += '<tr>' + addItem("hero", hero.partner, hero.win * 100 / hero.play) + '</tr>';
+            }
+
+            document.getElementById("partners").innerHTML = content;
         })
 
         draw();

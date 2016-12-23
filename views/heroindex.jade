@@ -57,7 +57,7 @@ block body
                 }
                 var rate = hero.win * 100 / hero.play * 0.5;
                 var playrate = hero.play *100 / maxplay * 0.5;
-                var winrate = '<div style="background:#282;display:inline-block;height:100%;width:'+ rate +'%" ></div>' + '<div style="background:#fff;display:inline-block;height:100%;width:'+ Math.max(25 - rate,0) +'%" ></div>' 
+                var winrate = '<div style="background:#aaa;display:inline-block;height:100%;width:'+ rate +'%" ></div>' + '<div style="background:#b22;display:inline-block;height:100%;width:'+ Math.max(25 - rate,0) +'%" ></div>' + '<div style="background:#2b2;display:inline-block;height:100%;width:'+ Math.max(rate - 25,0) +'%" ></div>'
                 var play = '<div style="display:inline-block;height:100%;width:'+ (50 - playrate) +'%" ></div>' + '<div style="background:#dd2;display:inline-block;height:100%;width:'+(playrate)+'%" ></div>';
                 var image = "<a href='hero/" + hero.hero + "'><img 'width='" + width + "px' height='" + height + "px' src='http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.hero + "_hphover.png' class='normalImage'/></a>";
 

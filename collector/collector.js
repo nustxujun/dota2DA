@@ -176,7 +176,7 @@ function recordPartners(players, win)
             continue;
         for (var j = 0; j < 5; ++j)
         {
-            var p2 = player[j];
+            var p2 = players[j];
             if (i == j || p.hero_id == 0)
                 continue;
 

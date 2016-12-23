@@ -32,7 +32,7 @@ var mems = [
     "matchid",
     "details",
     "gold",
-    "duration",
+    "duration"
 ]
 
 function processResult(data, single) {
@@ -54,6 +54,9 @@ function processResult(data, single) {
 
         if (data.opponent)
             ret.opponent = heroNameMap[data.opponent]
+
+        if (data.partner)
+            ret.partner = heroNameMap[data.partner]
 
         for (var i in mems) {
             var index = mems[i]
@@ -209,6 +212,21 @@ else
         if (req.query.hero)
             condition.heroid = heroMap[req.query.hero];
         heroversuses.find(condition, null, { sort: { used: -1 } }, function (err, docs) {
+            if (err) {
+                logger.log(err, "error")
+            }
+            else {
+                res.send(processResult(docs));
+            }
+        })
+    });
+
+    router.get("/GetHeroPartners", function (req, res, next) {
+        var heropartners = datamgr.getHeroPartners();
+        var condition = {};
+        if (req.query.hero)
+            condition.heroid = heroMap[req.query.hero];
+        heropartners.find(condition, null, { sort: { play: -1 } }, function (err, docs) {
             if (err) {
                 logger.log(err, "error")
             }
